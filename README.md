@@ -1,4 +1,4 @@
-# MuseHeart-MusicBot-TURKISH / 59ba024
+# <img src='https://flagcdn.com/tr.svg' width=40> MuseHeart-MusicBot-TURKISH / 52ffaae
 > [!WARNING]
 > Bu repo, Museheart botunun Ekibimiz [Mahirsn](https://github.com/mahirsn), [Tospeek](https://github.com/Tospeek) Ve [Sepultrex](https://github.com/Sepultrex) Tarafından Portekizce'den Türkçe'ye çevrilmiş versiyonudur. (DİKKAT! Botun mevcut sürümü ile birebir aynı olmayabilir ve çeviride tutarsızlıklar bulunabilir.)
 
@@ -174,7 +174,7 @@ Not: Bu bölümde birkaç rehber daha var [wiki](https://github.com/zRitsu/MuseH
 ### Eğer bir probleminiz varsa, problemi detaylandıran bir [issue](https://github.com/zRitsu/MuseHeart-MusicBot/issues) gönderin.
 
 
-## Özel teşekkürler ve krediler:
+## Özel teşekkürler:
 
 * [DisnakeDev](https://github.com/DisnakeDev) (disnake) ve Rapptz'e [discord.py](https://github.com/Rapptz/discord.py) original
 * [Pythonista Guild](https://github.com/PythonistaGuild) (wavelink)
