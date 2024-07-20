@@ -1,4 +1,4 @@
-# <img src='https://flagcdn.com/tr.svg' width=40> MuseHeart-MusicBot-TURKISH / 52ffaae
+# <p align="center"> <img src="https://flagsapi.com/TR/shiny/64.png"> <br> MuseHeart-MusicBot-TURKISH / 52ffaae </p> 
 > [!WARNING]
 > Bu repo, Museheart botunun Ekibimiz [Mahirsn](https://github.com/mahirsn), [Tospeek](https://github.com/Tospeek) Ve [Sepultrex](https://github.com/Sepultrex) Tarafından Portekizce'den Türkçe'ye çevrilmiş versiyonudur. (DİKKAT! Botun mevcut sürümü ile birebir aynı olmayabilir ve çeviride tutarsızlıklar bulunabilir.)
 
