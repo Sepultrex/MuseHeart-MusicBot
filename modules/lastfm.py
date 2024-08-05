@@ -474,7 +474,8 @@ class LastFmCog(commands.Cog):
 
                         if not [t for t in exclude_tags if t.lower() in track.title]:
                             result = [t for t in result if (t.duration - 10000) < track.duration < (t.duration + 10000) and check_track_title(t.title)]
-
+                        else:
+                            result = [t for t in result if (t.duration - 10000) < track.duration < (t.duration + 10000)]
                         if not result:
                             print(f"⚠️ - Last.FM Scrobble -Şarkı için sonuç yok: {track_query}")
                             self.bot.last_fm.cache[track_query] = {}
