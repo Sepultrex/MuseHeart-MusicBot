@@ -1306,7 +1306,7 @@ class LavalinkPlayer(wavelink.Player):
                 hints.append(
                     "Eğer herhangi bir üye beni beklemek zorunda kalmadan başka bir ses kanalında kullanmak isterse, lütfen benimle iletişime geçin. "
                     f"bağlantıyı kesmek veya mevcut kanaldan beni kesmek, daha fazlası var {bots_in_guild} bot{'s'[:bots_in_guild^1]} sunucu üzerinde "
-                    "aynı sistemimle/komutlarımla çalışır(lar) (aynı önek/slash komutlarını kullanarak). "
+                    "Aynı sistemimle/komutlarımla çalışır(lar) (aynı önek/slash komutlarını kullanarak). "
                     f"Mevcut kanalımdan başka bir ses kanalına girmeyi deneyin ve şu komutu kullanın "
                     f"{self.prefix_info}play veya /play."
                 )
