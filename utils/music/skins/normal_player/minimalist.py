@@ -27,7 +27,7 @@ class Minimalist:
 
         data = {
             "embeds": [],
-                        "content": f"-# ▶️`⠂Tocando:` [`{fix_characters(player.current.title, 42)}`](<{player.current.uri or player.current.search_uri}>) `[{fix_characters(player.current.author, 20)}] {duration}`"
+            "content": f"-# ▶️`⠂Tocando:` [`{fix_characters(player.current.title, 42)}`](<{player.current.uri or player.current.search_uri}>) `[{fix_characters(player.current.author, 20)}] {duration}`"
         }
 
         if player.current_hint:
