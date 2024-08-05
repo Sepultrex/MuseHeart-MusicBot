@@ -585,7 +585,6 @@ class LavalinkPlayer(wavelink.Player):
             self.initial_hints.append(
                 f"Burada dinlediğiniz şarkıları mobil cihazınıza kaydetmek için bir last.fm hesabına bağlanabilirsiniz. "
                 f"çalınan şarkıların listesi. lastfm komutunu veya {self.prefix_info}lastfm komutunu kullanmayı deneyin "
-                "(Not: Sistem youtube ve soundcloud'dan müzik ile uyumlu değildir)"
             )
 
         if hint_platforms:
