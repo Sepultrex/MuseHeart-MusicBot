@@ -2690,9 +2690,11 @@ class LavalinkPlayer(wavelink.Player):
             await self.process_rpc()
 
         if force or (interaction and not interaction.response.is_done()):
-            if self.controller_mode or interaction:
+            if self.controller_mode:
                 await self.invoke_np(interaction=interaction)
-
+            else:
+                await interaction.response.defer()
+                
         else:
             self.update = True
 
