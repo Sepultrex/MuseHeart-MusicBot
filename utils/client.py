@@ -881,7 +881,6 @@ class BotPool:
 
                 print(message)
 
-
         loop.create_task(self.load_playlist_cache())
 
         if start_local:
