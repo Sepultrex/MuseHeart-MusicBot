@@ -1003,6 +1003,7 @@ class Music(commands.Cog):
         fav_opts = []
 
         menu = None
+        selected_title = ""
 
         if query.startswith(">> [💠 Entegrasyonlar 💠] <<"):
             query = ""
@@ -1150,6 +1151,7 @@ class Music(commands.Cog):
                 inter.id = select_interaction.id
                 inter.response = select_interaction.response
                 query = select_interaction.data.values[0]
+                selected_title = ":".join(query.split(":")[2:])
 
         elif not query:
             raise EmptyFavIntegration()
@@ -1260,7 +1262,7 @@ class Music(commands.Cog):
                         ], timeout=120)
 
                     embed = disnake.Embed(
-                        description= f"### Entegrasyon çalma listeleri [{info['title']}]({query}):\n\n"+ "\n".join(f'[`{i["title"]}`]({i["url"]})' for i in info['entries']) + "\n\n**Aşağıdan bir çalma listesi seçin:**\n"
+                        description= f"### Listesinden bir çalma listesi kullanın. {platform}: [{info.get('title') or selected_title}]({query})\n\n"+ "\n".join(f'[`{i["title"]}`]({i["url"]})' for i in info['entries']) + "\n\n**Aşağıdan bir çalma listesi seçin:**\n"
                                     f'-# Bu talep otomatik olarak iptal edilecektir <t:{int((disnake.utils.utcnow() + datetime.timedelta(seconds=120)).timestamp())}:R> eğer aşağıda bir seçenek seçmezseniz.',
                         color=self.bot.get_color(guild.me)
                     ).set_thumbnail(music_source_image(platform))
