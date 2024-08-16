@@ -16,4 +16,5 @@ tornado
 emoji
 urllib3>=2.1.0
 async-timeout
-cachetools 
+cachetools
+syncedlyrics
