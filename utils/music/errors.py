@@ -174,8 +174,6 @@ def parse_error(
         components = [
             disnake.ui.Button(label="Yer imi yöneticisini açın",
                               custom_id="musicplayer_fav_manager", emoji="⭐"),
-            disnake.ui.Button(label="Entegrasyon yöneticisini açın",
-                              custom_id="musicplayer_integration_manager", emoji="💠")
         ]
 
     elif isinstance(error, commands.MaxConcurrencyReached):
