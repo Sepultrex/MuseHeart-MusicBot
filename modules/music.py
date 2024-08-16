@@ -75,155 +75,6 @@ class Music(commands.Cog):
         else:
             self.error_report_queue = None
 
-    async def update_cache(self):
-
-        tracks_final = {}
-
-        for url, data in self.bot.pool.playlist_cache.items():
-
-            tracks = []
-
-            for t in data:
-                t.info["id"] = t.id
-                if t.playlist:
-                    t.info["playlist"] = {"name": t.playlist_name, "url": t.playlist_url}
-                tracks.append(t.info)
-
-            tracks_final[url] = tracks
-
-        async with aiofiles.open(f"./.playlist_cache.pkl", "wb") as f:
-            await f.write(zlib.compress(pickle.dumps(tracks_final)))
-
-    @commands.is_owner()
-    @commands.command(hidden=True, aliases=["ac"])
-    async def addcache(self, ctx: CustomContext, url: str):
-
-        url = url.strip("<>")
-
-        async with ctx.typing():
-            result, node = await self.get_tracks(url, ctx.author, use_cache=False, source=False)
-
-        try:
-            result = result.tracks
-        except AttributeError:
-            pass
-
-        self.bot.pool.playlist_cache[url] = result
-
-        await self.update_cache()
-
-        await ctx.send("Linkteki müzikler başarıyla önbelleğe eklendi.", delete_after=30)
-
-    @commands.is_owner()
-    @commands.cooldown(1, 300, commands.BucketType.default)
-    @commands.command(hidden=True, aliases=["uc"])
-    async def updatecache(self, ctx: CustomContext, *args):
-
-        if "-fav" in args:
-            data = await self.bot.get_global_data(ctx.author.id, db_name=DBModel.users)
-
-            self.bot.pool.playlist_cache.update({url: [] for url in data["fav_links"].values()})
-
-        try:
-            if not self.bot.pool.playlist_cache:
-                raise GenericError("**Çalma listesi önbelleğiniz boş...**")
-        except KeyError:
-            raise GenericError(f"**Sen kullanmadın: {ctx.prefix}{self.addcache.name}**")
-
-        msg = None
-
-        counter = 0
-
-        amount = len(self.bot.pool.playlist_cache)
-
-        txt = ""
-
-        for url in list(self.bot.pool.playlist_cache):
-
-            try:
-                async with ctx.typing():
-                    tracks, node = await self.get_tracks(url, ctx.author, use_cache=False)
-            except:
-                traceback.print_exc()
-                tracks = None
-                try:
-                    del self.bot.pool.playlist_cache[url]
-                except:
-                    pass
-
-            if not tracks:
-                txt += f"[`❌ Başarısız`]({url})\n"
-
-            else:
-
-                try:
-                    tracks = tracks.tracks
-                except AttributeError:
-                    pass
-
-                self.bot.pool.playlist_cache[url] = tracks
-
-                txt += f"[`{tracks[0].playlist_name}`]({url})\n"
-
-            counter += 1
-
-            embed = disnake.Embed(
-                description=txt, color=self.bot.get_color(ctx.guild.me),
-                title=f"Oynatma listesi doğrulandı: {counter}/{amount}"
-            )
-
-            if not msg:
-                msg = await ctx.send(embed=embed)
-            else:
-                await msg.edit(embed=embed)
-
-        await self.update_cache()
-
-    @commands.is_owner()
-    @commands.command(hidden=True, aliases=["rc"])
-    async def removecache(self, ctx: CustomContext, url: str):
-
-        try:
-            del self.bot.pool.playlist_cache[url]
-        except KeyError:
-            raise GenericError("**Girdiğiniz url ile önbelleğe alınmış öğe yok...**")
-
-        await self.update_cache()
-
-        await ctx.send("Bağlantıdaki şarkılar önbellekten başarıyla kaldırıldı.", delete_after=30)
-
-    @commands.is_owner()
-    @commands.command(hidden=True, aliases=["cc"])
-    async def clearcache(self, ctx: CustomContext):
-
-        try:
-            self.bot.pool.playlist_cache.clear()
-        except KeyError:
-            raise GenericError("**Önbelleğe alınmış oynatma listesi bağlantınız yok..**")
-
-        await self.update_cache()
-
-        await ctx.send("Oynatma listesi önbelleği başarıyla temizlendi.", delete_after=30)
-
-    @commands.is_owner()
-    @commands.command(hidden=True, aliases=["ec"])
-    async def exportcache(self, ctx: CustomContext):
-
-        await ctx.send(file=disnake.File(".playlist_cache.pkl"))
-
-    @commands.is_owner()
-    @commands.command(hidden=True, aliases=["ic"])
-    async def importcache(self, ctx: CustomContext, url: str):
-
-        async with ctx.typing():
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as r:
-                    self.bot.pool.playlist_cache.update(pickle.loads(await r.content.read()))
-
-        await self.update_cache()
-
-        await ctx.send("Önbellek dosyası başarıyla içe aktarıldı!", delete_after=30)
-
     stage_cd = commands.CooldownMapping.from_cooldown(2, 45, commands.BucketType.guild)
     stage_mc = commands.MaxConcurrency(1, per=commands.BucketType.guild, wait=False)
 
@@ -6768,7 +6619,7 @@ class Music(commands.Cog):
 
     async def get_tracks(
             self, query: str, user: disnake.Member, node: wavelink.Node = None,
-            track_loops=0, use_cache=True, source=None, bot: BotCore = None):
+            track_loops=0, source=None, bot: BotCore = None):
 
         if not bot:
             bot = self.bot
@@ -6786,91 +6637,77 @@ class Music(commands.Cog):
 
         exceptions = set()
 
-        is_yt_source = False
-
         tracks = []
 
-        if use_cache:
-            try:
-                tracks = self.bot.pool.playlist_cache[query]
-            except KeyError:
-                pass
+        is_yt_source = query.lower().startswith(
+            ("https://youtu.be", "https://www.youtube.com", "https://music.youtube.com")
+        )
+
+        for n in nodes:
+
+            node_retry = False
+
+            if source is False:
+                providers = [n.search_providers[:1]]
+                if query.startswith("https://www.youtube.com/live/"):
+                    query = query.split("?")[0].replace("/live/", "/watch?v=")
+
+                elif query.startswith("https://listen.tidal.com/album/") and "/track/" in query:
+                    query = f"http://www.tidal.com/track/{query.split('/track/')[-1]}"
+
+                elif query.startswith(("https://youtu.be/", "https://www.youtube.com/")):
+
+                    for p in ("&ab_channel=", "&start_radio="):
+                        if p in query:
+                            try:
+                                query = f'https://www.youtube.com/watch?v={re.search(r"v=([a-zA-Z0-9_-]+)", query).group(1)}'
+                            except:
+                                pass
+                            break
+            elif source:
+                providers = [s for s in n.search_providers if s != source]
+                providers.insert(0, source)
             else:
-                playlist = tracks[0].playlist
-                playlist.tracks = tracks
-                tracks = playlist
+                source = True
+                providers = n.search_providers
 
-        if not tracks:
+            for search_provider in providers:
 
-            is_yt_source = query.lower().startswith(
-                ("https://youtu.be", "https://www.youtube.com", "https://music.youtube.com")
-            )
+                try:
+                    search_query = f"{search_provider}:{query}" if source else query
+                    tracks = await n.get_tracks(
+                        search_query, track_cls=LavalinkTrack, playlist_cls=LavalinkPlaylist, requester=user.id
+                    )
+                except Exception as e:
+                    exceptions.add(repr(e))
+                    if [e for e in ("Video returned by YouTube isn't what was requested", "The video returned is not what was requested.") if e in str(e)]:
 
-            for n in nodes:
+                        if is_yt_source and n.version > 3:
+                            try:
+                                n.search_providers.remove("ytsearch")
+                            except:
+                                pass
+                            try:
+                                n.search_providers.remove("ytmsearch")
+                            except:
+                                pass
 
-                node_retry = False
+                        if is_yt_source:
+                            node_retry = True
+                            break
 
-                if source is False:
-                    providers = [n.search_providers[:1]]
-                    if query.startswith("https://www.youtube.com/live/"):
-                        query = query.split("?")[0].replace("/live/", "/watch?v=")
+                    if not isinstance(e, wavelink.TrackNotFound):
+                        print(f"Falha ao processar busca...\n{query}\n{traceback.format_exc()}")
 
-                    elif query.startswith("https://listen.tidal.com/album/") and "/track/" in query:
-                        query = f"http://www.tidal.com/track/{query.split('/track/')[-1]}"
-
-                    elif query.startswith(("https://youtu.be/", "https://www.youtube.com/")):
-
-                        for p in ("&ab_channel=", "&start_radio="):
-                            if p in query:
-                                try:
-                                    query = f'https://www.youtube.com/watch?v={re.search(r"v=([a-zA-Z0-9_-]+)", query).group(1)}'
-                                except:
-                                    pass
-                                break
-                elif source:
-                    providers = [s for s in n.search_providers if s != source]
-                    providers.insert(0, source)
-                else:
-                    source = True
-                    providers = n.search_providers
-
-                for search_provider in providers:
-
-                    try:
-                        search_query = f"{search_provider}:{query}" if source else query
-                        tracks = await n.get_tracks(
-                            search_query, track_cls=LavalinkTrack, playlist_cls=LavalinkPlaylist, requester=user.id
-                        )
-                    except Exception as e:
-                        exceptions.add(repr(e))
-                        if [e for e in ("Video returned by YouTube isn't what was requested", "The video returned is not what was requested.") if e in str(e)]:
-
-                            if is_yt_source and n.version > 3:
-                                try:
-                                    n.search_providers.remove("ytsearch")
-                                except:
-                                    pass
-                                try:
-                                    n.search_providers.remove("ytmsearch")
-                                except:
-                                    pass
-
-                            if is_yt_source:
-                                node_retry = True
-                                break
-
-                        if not isinstance(e, wavelink.TrackNotFound):
-                            print(f"Arama işlemi başarısız oldu...\n{query}\n{traceback.format_exc()}")
-
-                    if tracks or not source:
-                        break
-
-                if not node_retry:
-                    node = n
+                if tracks or not source:
                     break
 
-        if not tracks:
+            if not node_retry:
+                node = n
+                break
 
+        if not tracks:
+            
             if (bot.pool.config["FORCE_USE_DEEZER_CLIENT"] or [n for n in bot.music.nodes.values() if "deezer" in n.info.get("sourceManagers", [])]):
                 tracks = await self.bot.pool.deezer.get_tracks(url=query, requester=user.id)
 
