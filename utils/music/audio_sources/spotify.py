@@ -163,6 +163,8 @@ class SpotifyClient:
         except Exception as e:
             self.token_refresh = False
             raise e
+        
+        self.token_refresh = False
 
         async with aiofiles.open(spotify_cache_file, "w") as f:
             await f.write(json.dumps(self.spotify_cache))
