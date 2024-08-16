@@ -233,13 +233,13 @@ def run_lavalink(
 
     java_cmd += " -jar Lavalink.jar"
 
-    print(f"🌋 - Iniciando o servidor Lavalink (dependendo da hospedagem o lavalink pode demorar iniciar, "
-          f"o que pode ocorrer falhas em algumas tentativas de conexão até ele iniciar totalmente).\n{'-' * 30}")
+    print("🌋 - Lavalink sunucusunu başlatma (barındırma hizmetinize bağlı olarak Lavalink'in başlaması biraz zaman alabilir), "
+          "tamamen başlayana kadar birkaç bağlantı denemesinden sonra başarısız olabilir).")
 
     lavalink_process = subprocess.Popen(java_cmd.split(), stdout=subprocess.DEVNULL)
 
     if lavalink_additional_sleep:
-        print(f"Aguarde {lavalink_additional_sleep} segundos...\n{'-' * 30}")
+        print(f"🕙 - {lavalink_additional_sleep} Saniye bekkle...")
         time.sleep(lavalink_additional_sleep)
 
     return lavalink_process
