@@ -74,7 +74,7 @@ class BotPool:
         self.local_database: Optional[LocalDatabase] = None
         self.ws_client: Optional[WSClient] = None
         self.config = self.load_cfg()
-        self.playlist_cache = TTLCache(maxsize=1000, ttl=86400)
+        self.integration_cache = TTLCache(maxsize=500, ttl=7200)
         self.playlist_cache = TTLCache(maxsize=self.config["PLAYLIST_CACHE_SIZE"], ttl=self.config["PLAYLIST_CACHE_TTL"])
         self.spotify: Optional[SpotifyClient] = None
         self.deezer = DeezerClient(self.playlist_cache)
