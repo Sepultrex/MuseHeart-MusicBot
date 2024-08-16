@@ -6630,12 +6630,12 @@ class Music(commands.Cog):
         tracks = []
 
         if (bot.pool.config["FORCE_USE_DEEZER_CLIENT"] or [n for n in bot.music.nodes.values() if
-                                                           "deezer" in n.info.get("sourceManagers", [])]):
-            tracks = await self.bot.pool.deezer.get_tracks(url=query, requester=user.id)
+                                                           "deezer" not in n.info.get("sourceManagers", [])]):
+            tracks = await self.bot.pool.deezer.get_tracks(url=query, requester=user.id, search=False)
 
         if not tracks:
 
-            tracks = await self.bot.pool.spotify.get_tracks(self.bot, user.id, query)
+            tracks = await self.bot.pool.spotify.get_tracks(self.bot, user.id, query, search=False)
 
             if not tracks:
 
@@ -6723,17 +6723,25 @@ class Music(commands.Cog):
 
                 if not tracks:
 
-                    txt = "\n".join(exceptions)
+                    try:
+                        tracks = (await self.bot.pool.deezer.get_tracks(url=query, requester=user.id, search=True) or
+                                  await self.bot.pool.spotify.get_tracks(self.bot, user.id, query, search=True))
+                    except Exception as e:
+                        exceptions.add(repr(e))
 
-                    if is_yt_source and "Video returned by YouTube isn't what was requested" in txt:
-                        raise YoutubeSourceDisabled()
+                    if not tracks:
 
-                    if txt:
+                        txt = "\n".join(exceptions)
 
-                        if "This track is not readable. Available countries:" in txt:
-                            txt = "Şarkı şu anda bulunduğum bölgede mevcut değil..."
-                        raise GenericError(f"**Arama işleminizde bir hata oluştu:** \n{txt}", error=txt)
-                    raise GenericError("**Aramanız için sonuç bulunamadı.**")
+                        if is_yt_source and "Video returned by YouTube isn't what was requested" in txt:
+                            raise YoutubeSourceDisabled()
+
+                        if txt:
+
+                            if "reis bunuda yasaklamış. Mevcut ülkeler:" in txt:
+                                txt = "Verdiğiniz müzik şu an bulunduğum bölgede mevcut değil..."
+                            raise GenericError(f"**Aramanızla ilgili bir hata oluştu:** \n{txt}", error=txt)
+                        raise GenericError("**Aramanızla ilgili sonuç bulunamadı.**")
 
                 if isinstance(tracks, list):
                     tracks[0].info["extra"]["track_loops"] = track_loops
