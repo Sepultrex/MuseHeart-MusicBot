@@ -1263,10 +1263,10 @@ class Music(commands.Cog):
                         ], timeout=30)
 
                     embed = disnake.Embed(
-                        description="**Aşağıdan bir çalma listesi seçin:**\n"
-                                    f'Devam etmek için aşağıdakiler arasından bir seçenek seçin <t:{int((disnake.utils.utcnow() + datetime.timedelta(seconds=30)).timestamp())}:R> ',
+                        description= f"### Entegrasyon çalma listeleri [{info['title']}]({query}):\n"+ "\n".join(f'[`{i["title"]}`]({i["url"]})' for i in info['entries']) + "\n**Aşağıdan bir çalma listesi seçin:**\n"
+                                    f'-# Aşağıdakilerden bir çalma listesi seçin <t:{int((disnake.utils.utcnow() + datetime.timedelta(seconds=30)).timestamp())}:R> devam etmek için.',
                         color=self.bot.get_color(guild.me)
-                    )
+                    ).set_thumbnail(music_source_image(platform))
 
                     kwargs = {}
 
