@@ -347,6 +347,8 @@ class Node:
 
                     if isinstance(data, list):
                         return data
+                    
+                    break
 
         loadtype = data.get('loadType')
 
