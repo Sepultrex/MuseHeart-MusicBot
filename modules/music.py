@@ -1123,7 +1123,8 @@ class Music(commands.Cog):
 
                 if not select_interaction or view.selected is False:
 
-                    embed = disnake.Embed(description="### Seçim zamanınız bitti!" if view.selected is not False else "### Kullanıcı tarafından iptal edildi.", color=self.bot.get_color(guild.me))
+                    embed.description = "\n".join(embed.description.split("\n")[:-3])
+                    embed.set_footer(text="⚠️ Zaman doldu!" if not view.selected is False else "⚠️ Kullanıcı tarafından iptal edildi.")
 
                     try:
                         await msg.edit(embed=embed, components=song_request_buttons)
@@ -1135,13 +1136,9 @@ class Music(commands.Cog):
                     return
 
                 if select_interaction.data.values[0] == "cancel":
-                    await msg.edit(
-                        embed=disnake.Embed(
-                            description="**Seçim iptal edildi!**",
-                            color=self.bot.get_color(guild.me)
-                        ),
-                        components=None
-                    )
+                    embed.description = "\n".join(embed.description.split("\n")[:-3])
+                    embed.set_footer(text="⚠️ Seçim iptal edildi!")
+                    await msg.edit(embed=embed, components=None)
                     return
 
                 try:
@@ -1293,11 +1290,15 @@ class Music(commands.Cog):
                         except:
                             func = view.inter.response.edit_message
 
+                        embed.description = "\n".join(embed.description.split("\n")[:-3])
+                        embed.set_footer(text="⚠️ Zaman doldu!" if not view.selected is False else "⚠️ Kullanıcı tarafından iptal edildi.")
+
                         try:
                             await func(embed=disnake.Embed(color=self.bot.get_color(guild.me),
                                 description="**Zaman doldu!**" if not view.selected is False else "### Kullanıcı tarafından iptal edildi."),
                                 components=song_request_buttons
                             )
+                            await func(embed=embed,components=song_request_buttons)
                         except:
                             traceback.print_exc()
                         return
@@ -1395,19 +1396,11 @@ class Music(commands.Cog):
                         except AttributeError:
                             func = msg.edit
 
-                        mention = ""
+                        embed.description = "\n".join(embed.description.split("\n")[:-3])
+                        embed.set_footer(text="⚠️ Zaman doldu!" if not view.selected is False else "⚠️ Kullanıcı tarafından iptal edildi.")
 
                         try:
-                            if inter.message.author.bot:
-                                mention = f"{inter.author.mention}, "
-                        except AttributeError:
-                            pass
-
-                        try:
-                            await func(
-                                content=f"{mention}{'operasyon i̇ptal edi̇ldi̇' if view.selected is not False else 'zaman tükeniyor'}" if view.selected is not False else "Kullanıcı tarafından iptal edildi.",
-                                embed=None, components=song_request_buttons
-                            )
+                           await func(embed=embed, components=song_request_buttons)
                         except:
                             traceback.print_exc()
                         return
