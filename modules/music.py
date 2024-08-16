@@ -5197,16 +5197,6 @@ class Music(commands.Cog):
                 await self.process_player_interaction(interaction, cmd, cmd_kwargs)
                 return
 
-            if control == PlayerControls.integration_manager:
-
-                if str(interaction.user.id) not in interaction.message.content:
-                    await interaction.send("Burada etkileşimde bulunamazsınız!", ephemeral=True)
-                    return
-
-                cmd = self.bot.get_slash_command("integrations")
-                await self.process_player_interaction(interaction, cmd, cmd_kwargs)
-                return
-
             if control == PlayerControls.add_song:
 
                 if not interaction.user.voice:

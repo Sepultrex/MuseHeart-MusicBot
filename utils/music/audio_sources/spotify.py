@@ -59,11 +59,11 @@ class SpotifyClient:
                     await self.get_access_token()
                     return await self.request(path=path, params=params)
                 elif response.status == 404:
-                    raise GenericError("**Sağlanan bağlantı için sonuç bulunamadı (bağlantının doğru olup olmadığını veya içeriğinin özel mi yoksa silinmiş mi olduğunu kontrol edin)).**\n\n"
+                    raise GenericError("**Não houve resultado para o link informado (confira se o link está correto ou se o conteúdo dele está privado ou se foi deletado).**\n\n"
                                        f"{str(response.url).replace('api.', 'open.').replace('/v1/', '/').replace('s/', '/')}")
                 elif response.status == 429:
                     self.disabled = True
-                    print(f"⚠️ - Spotify: Hız sınırı nedeniyle dahili destek devre dışı bırakıldı (429).")
+                    print(f"⚠️ - Spotify: Suporte interno desativado devido a ratelimit (429).")
                     return
                 else:
                     response.raise_for_status()
@@ -115,7 +115,7 @@ class SpotifyClient:
                         "type": "visitor",
                     }
                     self.type = "visitor"
-                    print("🎶 - Spotify erişim için token başarıyla alındı: ziyaretçi.")
+                    print("🎶 - Access token do spotify obtido com sucesso do tipo: visitante.")
 
         else:
             token_url = 'https://accounts.spotify.com/api/token'
@@ -133,7 +133,7 @@ class SpotifyClient:
                     data = await response.json()
 
                 if data.get("error"):
-                    print(f"⚠️ - Spotify: token alınırken bir hata oluştu: {data['error_description']}")
+                    print(f"⚠️ - Spotify: Ocorreu um erro ao obter token: {data['error_description']}")
                     self.client_id = None
                     self.client_secret = None
                     await self.get_access_token()
@@ -147,7 +147,7 @@ class SpotifyClient:
 
                 self.spotify_cache["expires_at"] = time.time() + self.spotify_cache["expires_in"]
 
-                print("🎶 -Spotify tokenine erişim, Resmi API aracılığıyla başarıyla alındı.")
+                print("🎶 - Access token do spotify obtido com sucesso via API Oficial.")
 
         async with aiofiles.open(spotify_cache_file, "w") as f:
             await f.write(json.dumps(self.spotify_cache))
@@ -163,7 +163,7 @@ class SpotifyClient:
         if spotify_link_regex.match(query):
             async with bot.session.get(query, allow_redirects=False) as r:
                 if 'location' not in r.headers:
-                    raise GenericError("**Verilen bağlantı için sonuçlar alınamadı...**")
+                    raise GenericError("**Falha ao obter resultado para o link informado...**")
                 query = str(r.headers["location"])
 
         if not (matches := spotify_regex.match(query)) and not self.disabled:
@@ -222,7 +222,7 @@ class SpotifyClient:
             if [n for n in bot.music.nodes.values() if "spotify" in n.info.get("sourceManagers", [])]:
                 return
 
-            raise GenericError("**Spotify bağlantı desteği geçici olarak devre dışı bırakıldı.**")
+            raise GenericError("**O suporte a links do spotify está temporariamente desativado.**")
 
         url_type, url_id = matches.groups()
 
@@ -273,7 +273,11 @@ class SpotifyClient:
 
         if url_type == "album":
 
-            result = await self.get_album_info(url_id)
+            cache_key = f"partial:spotify:{url_type}:{url_id}"
+
+            if not (result := bot.pool.playlist_cache.get(cache_key)):
+                result = await self.get_album_info(url_id)
+                bot.pool.playlist_cache[cache_key] = result
 
             try:
                 thumb = result["tracks"][0]["album"]["images"][0]["url"]
@@ -282,7 +286,7 @@ class SpotifyClient:
 
             if result["tracks"] is None:
                 raise GenericError("**Não houve resultados para o link do álbum informado...**")
-            
+
             if len(result["tracks"]) < 2:
 
                 track = result["tracks"][0]
@@ -330,7 +334,11 @@ class SpotifyClient:
 
         elif url_type == "artist":
 
-            result = await self.get_artist_top(url_id)
+            cache_key = f"partial:spotify:{url_type}:{url_id}"
+
+            if not (result := bot.pool.playlist_cache.get(cache_key)):
+                result = await self.get_artist_top(url_id)
+                bot.pool.playlist_cache[cache_key] = result
 
             try:
                 data["playlistInfo"]["name"] = "As mais tocadas de: " + \
@@ -340,20 +348,26 @@ class SpotifyClient:
             tracks_data = result["tracks"]
 
         elif url_type == "playlist":
-            result = await bot.spotify.get_playlist_info(url_id)
+
+            cache_key = f"partial:spotify:{url_type}:{url_id}"
+
+            if not (result := bot.pool.playlist_cache.get(cache_key)):
+                result = await self.get_playlist_info(url_id)
+                bot.pool.playlist_cache[cache_key] = result
+
             data["playlistInfo"]["name"] = result["name"]
             data["playlistInfo"]["thumb"] = result["images"][0]["url"]
 
             if result["tracks"]["items"] is None:
-                raise GenericError("**Sağlanan oynatma listesi bağlantısı için sonuç bulunamadı...**")
-            
+                raise GenericError("**Não houve resultados para o link da playlist informada...**")
+
             tracks_data = [t["track"] for t in result["tracks"]["items"]]
 
         else:
-            raise GenericError(f"**Spotify bağlantısı tanınmıyor/desteklenmiyor:**\n{query}")
+            raise GenericError(f"**Link do spotify não reconhecido/suportado:**\n{query}")
 
         if not tracks_data:
-            raise GenericError("**Sağlanan Spotify bağlantısı için sonuç bulunamadı...**")
+            raise GenericError("**Não houve resultados para o link do spotify informado...**")
 
         data["playlistInfo"]["selectedTrack"] = -1
         data["playlistInfo"]["type"] = url_type

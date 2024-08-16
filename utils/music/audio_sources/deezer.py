@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import re
+from typing import Optional
 
 from aiohttp import ClientSession
+from cachetools import TTLCache
 
 from utils.music.converters import fix_characters, URL_REG
 from utils.music.errors import GenericError
@@ -16,6 +18,9 @@ deezer_regex = re.compile(r"(https?://)?(www\.)?deezer\.com/(?P<countrycode>[a-z
 class DeezerClient:
 
     base_url = "https://api.deezer.com"
+    
+    def __init__(self, cache: Optional[TTLCache] = None):
+        self.cache = cache or TTLCache(maxsize=700, ttl=86400)
 
     async def request(self, path: str, params: dict = None):
 
@@ -101,7 +106,7 @@ class DeezerClient:
             async with ClientSession() as session:
                 async with session.get(url, allow_redirects=False) as r:
                     if 'location' not in r.headers:
-                        raise GenericError("**Verilen bağlantı için sonuçlar alınamadı...**")
+                        raise GenericError("**Falha ao obter resultado para o link informado...**")
                     url = str(r.headers["location"])
 
         url_type, url_id = matches.groups()[-2:]
@@ -146,7 +151,11 @@ class DeezerClient:
 
         if url_type == "album":
 
-            result = await self.get_album_info(url_id)
+            cache_key = f"partial:deezer:{url_type}:{url_id}"
+
+            if not (result:=self.cache.get(cache_key)):
+                result = await self.get_album_info(url_id)
+                self.cache[cache_key] = result
 
             if len(result['tracks']['data']) > 1:
                 data["playlistInfo"].update(
@@ -190,21 +199,25 @@ class DeezerClient:
 
         elif url_type == "artist":
 
-            result = await self.get_artist_top(url_id)
+            cache_key = f"partial:deezer:{url_type}:{url_id}"
+
+            if not (result:=self.cache.get(cache_key)):
+                result = await self.get_artist_top(url_id)
+                self.cache[cache_key] = result
 
             url_id = int(url_id)
 
             for a in result['data']:
 
                 if url_id == a['artist']['id']:
-                    data["playlistInfo"]["name"] = f"En çok çalınanlar: {a['artist']['name']}"
+                    data["playlistInfo"]["name"] = f"As mais tocadas de: {a['artist']['name']}"
                     break
 
                 artist = None
 
                 for c in a['contributors']:
                     if c['id'] == url_id:
-                        artist = f"En çok çalınanlar: {c['name']}"
+                        artist = f"As mais tocadas de: {c['name']}"
                         break
 
                 if artist:
@@ -214,16 +227,22 @@ class DeezerClient:
             tracks_data = result['data']
 
         elif url_type == "playlist":
-            result = await self.get_playlist_info(url_id)
+
+            cache_key = f"partial:deezer:{url_type}:{url_id}"
+
+            if not (result := self.cache.get(cache_key)):
+                result = await self.get_playlist_info(url_id)
+                self.cache[cache_key] = result
+
             data["playlistInfo"]["name"] = result["title"]
             data["playlistInfo"]["thumb"] = result["picture_big"]
             tracks_data = result["tracks"]["data"]
 
         else:
-            raise GenericError(f"**Deezer bağlantısı tanınmıyor/desteklenmiyor:**\n{url}")
+            raise GenericError(f"**Link do deezer não reconhecido/suportado:**\n{url}")
 
         if not tracks_data:
-            raise GenericError("**Sağlanan deezer bağlantısında sonuç bulunamadı...**")
+            raise GenericError("**Não houve resultados no link do deezer informado...**")
 
         data["playlistInfo"]["selectedTrack"] = -1
         data["playlistInfo"]["type"] = url_type
