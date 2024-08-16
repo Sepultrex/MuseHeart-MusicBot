@@ -1073,7 +1073,7 @@ class Music(commands.Cog):
                     embed.description = f'### 📑 ⠂Son şarkılarınız/çalma listeleriniz:\n{embed.description}\n\n' \
                                         f'**Aşağıdan bir ürün seçin:**'
 
-                embed.description += f'\n-# Not: sadece <t:{int((disnake.utils.utcnow() + datetime.timedelta(seconds=75)).timestamp())}:R> seçim yapmak için!'
+                embed.description += f'\n-# Not: Bu talep otomatik olarak iptal edilecektir <t:{int((disnake.utils.utcnow() + datetime.timedelta(seconds=75)).timestamp())}:R> eğer aşağıda bir seçenek seçmezseniz.'
 
                 try:
                     if bot.user.id != self.bot.user.id:
@@ -1260,11 +1260,11 @@ class Music(commands.Cog):
                         opts=[
                             disnake.SelectOption(label=e['title'][:90], value=f"entrie_select_{c}", description=platform,
                                                  emoji=emoji) for c, e in enumerate(info['entries'])
-                        ], timeout=30)
+                        ], timeout=75)
 
                     embed = disnake.Embed(
                         description= f"### Entegrasyon çalma listeleri [{info['title']}]({query}):\n"+ "\n".join(f'[`{i["title"]}`]({i["url"]})' for i in info['entries']) + "\n**Aşağıdan bir çalma listesi seçin:**\n"
-                                    f'-# Aşağıdakilerden bir çalma listesi seçin <t:{int((disnake.utils.utcnow() + datetime.timedelta(seconds=30)).timestamp())}:R> devam etmek için.',
+                                    f'-# Bu talep otomatik olarak iptal edilecektir <t:{int((disnake.utils.utcnow() + datetime.timedelta(seconds=75)).timestamp())}:R> eğer aşağıda bir seçenek seçmezseniz.',
                         color=self.bot.get_color(guild.me)
                     ).set_thumbnail(music_source_image(platform))
 
