@@ -153,6 +153,7 @@ database.json
 /local_dbs/
 /local_database/
 application.yml
+/playlist_cache.json
 .local/
 .player_sessions/
 .jabba/
