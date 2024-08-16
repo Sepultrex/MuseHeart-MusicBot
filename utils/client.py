@@ -116,8 +116,6 @@ class BotPool:
         async with aiofiles.open("./.local_database/playlist_cache.pkl", 'wb') as f:
             await f.write(pickle.dumps(self.playlist_cache))
 
-
-
     async def connect_lavalink_queue_task(self, identifier: str):
 
         delay_secs = int(self.config.get("LAVALINK_QUEUE_DELAY", 1.5))
@@ -920,7 +918,7 @@ class BotPool:
             self.playlist_cache_updater_task = loop.create_task(self.playlist_cache_updater())
 
             loop.create_task(self.connect_rpc_ws())
-            
+
             try:
                 loop.run_until_complete(
                     self.run_bots(self.get_all_bots())
