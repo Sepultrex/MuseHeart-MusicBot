@@ -1294,10 +1294,6 @@ class Music(commands.Cog):
                         embed.set_footer(text="⚠️ Zaman doldu!" if not view.selected is False else "⚠️ Kullanıcı tarafından iptal edildi.")
 
                         try:
-                            await func(embed=disnake.Embed(color=self.bot.get_color(guild.me),
-                                description="**Zaman doldu!**" if not view.selected is False else "### Kullanıcı tarafından iptal edildi."),
-                                components=song_request_buttons
-                            )
                             await func(embed=embed,components=song_request_buttons)
                         except:
                             traceback.print_exc()
