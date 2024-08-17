@@ -903,19 +903,74 @@ class Music(commands.Cog):
 
         user_data = await self.bot.get_global_data(inter.author.id, db_name=DBModel.users)
 
+        try:
+            fav_slashcmd = f"</fav_manager:" + str(self.bot.get_global_command_named("fav_manager",
+                                                                                     cmd_type=disnake.ApplicationCommandType.chat_input).id) + ">"
+        except AttributeError:
+            fav_slashcmd = "/fav_manager"
+
+        try:
+            savequeue_slashcmd = f"</save_queue:" + str(self.bot.get_global_command_named("save_queue",
+                                                                                          cmd_type=disnake.ApplicationCommandType.chat_input).id) + ">"
+        except AttributeError:
+            savequeue_slashcmd = "/save_queue"
+
         if not query:
+
+            opts = []
+
+            txt = "### `[⭐] Favoritos [⭐]`\n"
+
+            if user_data["fav_links"]:
+                opts.append(disnake.SelectOption(label="Favori kullanın", value=">> [⭐ Favoriler ⭐] <<", emoji="⭐"))
+                txt += f"`Beğendiğiniz veya favorilerinize eklediğiniz müzikleri veya çalma listelerini çalın.`\n"
+
+            else:
+                txt += f"`Senin favorin yok...`\n"
+
+            txt += f"-# Komutu kullanarak favorilerinizi yönetebilirsiniz. {fav_slashcmd}.\n" \
+                   f"### `[💠] Entegrasyonlar [💠]`\n"
+
+            if user_data["integration_links"]:
+                opts.append(disnake.SelectOption(label="Entegrasyonu kullan", value=">> [💠 Entegrasyonlar 💠] <<", emoji="💠"))
+                txt += f"`Entegrasyon listenizden bir YouTube kanalındaki (veya bir müzik platformundaki kullanıcı profilindeki) herkese açık oynatma listesini oynatın.`\n"
+
+            else:
+                txt += f"`Entegrasyon eklenmedi... " \
+                        f"Sahip oldukları tüm genel çalma listelerine kolay erişim sağlamak amacıyla YouTube kanallarına bağlantılar (veya bir müzik platformundaki kullanıcının profiline bir bağlantı) eklemek için entegrasyonları kullanın.`\n"
+
+            txt += f"-# Entegrasyonlarınızı yönetmek için seçeneği belirleyerek {fav_slashcmd} komutunu kullanın \"entegrasyonlar\".\n" \
+                    f"### `[💾] Satır Kaydet [💾]`\n"
+
+            if os.path.isfile(f"./local_database/saved_queues_v1/users/{inter.author.id}.pkl"):
+                txt += f"`Komutla kaydettiğiniz müzik kuyruğunu kullanın` {savequeue_slashcmd}.\n"
+                opts.append(disnake.SelectOption(label="Kaydedilen listeyi kullanın", value=">> [💾 Kaydedilen kuyruk 💾] <<", emoji="💾"))
+
+            else:
+                txt += "`Kayıtlı bir müzik sıranız yok`\n" \
+                        f"-# Kayıtlı bir sıraya sahip olmak için, oynatıcıya en az 3 şarkı eklendiğinde {savequeue_slashcmd} komutunu kullanabilirsiniz.."
+
+            if user_data["last_tracks"]:
+                txt += "### `[📑] Son şarkılar [📑]`\n" \
+                    "`Yakın zamanda dinlediğiniz/eklediğiniz bir şarkıyı çalın.`\n"
+                opts.append(disnake.SelectOption(label="Yeni müzikler ekleyin", value=">> [📑 Son şarkılar 📑] <<", emoji="📑"))
+                
+            if isinstance(inter, disnake.MessageInteraction) and not inter.response.is_done():
+                await inter.response.defer(ephemeral=ephemeral)
+
+            if not guild_data:
+                guild_data = await bot.get_data(inter.guild_id, db_name=DBModel.guilds)
+
+            if guild_data["player_controller"]["fav_links"]:
+                txt += "### `[📌] Sunucu Favorileri [📌]`\n" \
+                        "`Sunucu favorisini kullan (sunucu personeli tarafından eklendi).`\n"
+                disnake.SelectOption(label="Sunucu favorilerini kullanın", value=">> [📌 Sunucu favorileri 📌] <<", emoji="📌"),
 
             embed = disnake.Embed(
                 color=self.bot.get_color(guild.me),
-                description="**Aşağıdan bir seçenek seçin:**\n"
-                            f'Seçim yapmak için <t:{int((disnake.utils.utcnow() + datetime.timedelta(seconds=45)).timestamp())}:R>niz kaldı!'
+                description=f"{txt}## Aşağıdan bir seçenek seçin:"
+                            f"\n-# Not: Bu istek otomatik olarak iptal edilecek <t:{int((disnake.utils.utcnow() + datetime.timedelta(seconds=180)).timestamp())}:R> Aşağıdaki seçeneklerden biri seçilmemişse."
             )
-
-            try:
-                if bot.user.id != self.bot.user.id:
-                    embed.set_footer(text=f"Bot seçildi: {bot.user.display_name}", icon_url=bot.user.display_avatar.url)
-            except AttributeError:
-                pass
 
             kwargs = {
                 "content": "",
@@ -928,27 +983,7 @@ class Music(commands.Cog):
             except AttributeError:
                 pass
 
-            opts = [
-                disnake.SelectOption(label="Favoriy kullan", value=">> [⭐ Favoriler ⭐] <<", emoji="⭐"),
-                disnake.SelectOption(label="Entegrasyonu kullan", value=">> [💠 Entegrasyonlar 💠] <<", emoji="💠"),
-            ]
-            
-            if os.path.isfile(f"./local_database/saved_queues_v1/users/{inter.author.id}.pkl"):
-                opts.append(disnake.SelectOption(label="Kaydedilen listeyi kullanın", value=">> [💾 Kaydedilen kuyruk 💾] <<", emoji="💾"))
-
-            if user_data["last_tracks"]:
-                opts.append(disnake.SelectOption(label="Yeni müzikler ekleyin", value=">> [📑 Son şarkılar 📑] <<", emoji="📑"))
-                
-            if isinstance(inter, disnake.MessageInteraction) and not inter.response.is_done():
-                await inter.response.defer(ephemeral=ephemeral)
-
-            if not guild_data:
-                guild_data = await bot.get_data(inter.guild_id, db_name=DBModel.guilds)
-
-            if guild_data["player_controller"]["fav_links"]:
-                disnake.SelectOption(label="Sunucu favorilerini kullanın", value=">> [📌 Sunucu favorileri 📌] <<", emoji="📌"),
-
-            view = SelectInteraction(user=inter.author, timeout=45, opts=opts)
+            view = SelectInteraction(user=inter.author, timeout=180, opts=opts)
 
             try:
                 await msg.edit(view=view, **kwargs)
@@ -1071,22 +1106,23 @@ class Music(commands.Cog):
                 )
 
                 if menu == "favs":
-                    embed.description = f'### ⭐ ⠂Favorileriniz:\n{embed.description}\n\n' \
-                                        f'**Aşağıdan bir favori seçin:**'
+                    embed.description = '### `[⭐] ⠂Favoriler ⠂[⭐]`\n' \
+                                        '`Beğendiğiniz veya favori listenize eklediğiniz müziği veya çalma listesini çalın.`\n' \
+                                        f'-# Favorilerinizi {fav_slashcmd} komutunu kullanarak yönetebilirsiniz.\n\n' \
+                                         f'{embed.description}\n\n'
 
-                elif menu == "integrations":
-                    embed.description = f'### 💠 ⠂Entegrasyonlarınız:\n{embed.description}\n\n' \
-                                        f'**Aşağıdan bir entegrasyon seçin:**'
+                    embed.description = '### `[💠] ⠂Entegrasyonlar ⠂[💠]`\n' \
+                                        '`Entegrasyon listenizden bir YouTube kanalındaki (veya bir müzik platformundaki kullanıcı profilindeki) herkese açık oynatma listesini oynatın.`\n' \
+                                        f'-# Entegrasyonlarınızı yönetmek için seçeneği belirleyerek {fav_slashcmd} komutunu kullanın \"entegrasyonlar\".\n\n' \
+                                         f'{embed.description}\n\n'
 
-                elif menu == "guild_favs":
-                    embed.description = f'### 📌 ⠂Sunucu favorileri:\n{embed.description}\n\n' \
-                                        f'**Aşağıdan bir favori seçin:**'
+                    embed.description = f'### `[📌] ⠂Sunucu Favorileri ⠂[📌]\n' \
+                                        '`Sunucu favorilerini kullanın (sunucu personeli tarafından eklenir).`\n\n'\
+                                         f'{embed.description}\n\n'
 
-                elif menu == "latest":
-                    embed.description = f'### 📑 ⠂Son şarkılarınız/çalma listeleriniz:\n{embed.description}\n\n' \
-                                        f'**Aşağıdan bir ürün seçin:**'
+                    embed.description = f'### 📑 ⠂En son müziği/çalma listesini çal:\n{embed.description}\n\n'
 
-                embed.description += f'\n-# Not: Bu talep otomatik olarak iptal edilecektir <t:{int((disnake.utils.utcnow() + datetime.timedelta(seconds=75)).timestamp())}:R> eğer aşağıda bir seçenek seçmezseniz.'
+                embed.description += f'**Aşağıdan bir favori seçin:**\n-# Not: Bu istek otomatik olarak iptal edilecektir <t:{int((disnake.utils.utcnow() + datetime.timedelta(seconds=75)).timestamp())}:R> aşağıdaki seçeneklerden biri seçilmemişse.'
 
                 try:
                     if bot.user.id != self.bot.user.id:
