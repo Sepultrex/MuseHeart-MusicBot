@@ -167,6 +167,9 @@ class Owner(commands.Cog):
 
             if args.yml and os.path.isfile("./application.yml"):
                 os.remove("./application.yml")
+                txt = "Lavalink.jar ve application.yml dosyaları güncellenecektir"
+            else:
+                txt = "Lavalink.jar dosyası güncellenecek"
 
             await self.bot.pool.start_lavalink()
 
@@ -191,8 +194,7 @@ class Owner(commands.Cog):
 
         await ctx.send(
             embed=disnake.Embed(
-                description="**Lavalink.jar dosyası güncellenecek "
-                            "e lavalink LOCAL sunucusu yeniden başlatılacak.**",
+                description=f"**{txt} ve LOCAL lavalink sunucusu yeniden başlatılacaktır.**",
                 color=self.bot.get_color(ctx.guild.me)
             )
         )
