@@ -1293,10 +1293,10 @@ class Music(commands.Cog):
                     for page_index, page in enumerate(disnake.utils.as_chunks(info['entries'], 15)):
 
                         embed = disnake.Embed(
-                            description="\n".join(f'-# ` {(25*page_index)+n+1}. `[`{i["title"]}`]({i["url"]})' for n, i in enumerate(page)) + "\n\n**Selecione uma playlist abaixo:**\n"
-                                        f'-# Essa solicitação será cancelada automaticamente <t:{int((disnake.utils.utcnow() + datetime.timedelta(seconds=120)).timestamp())}:R> caso não seja selecionado uma opção abaixo.',
+                            description="\n".join(f'-# ` {(15*page_index)+n+1}. `[`{i["title"]}`]({i["url"]})' for n, i in enumerate(page)) + "\n\n**Aşağıdan bir çalma listesi seçin:**\n"
+                                        f'-# Bu talep otomatik olarak iptal edilecektir <t:{int((disnake.utils.utcnow() + datetime.timedelta(seconds=120)).timestamp())}:R> eğer aşağıda bir seçenek seçmezseniz.',
                             color=self.bot.get_color(guild.me)
-                        ).set_author(name=f"Tocar playlist pública {embed_title}", icon_url=music_source_image(platform), url=query)
+                        ).set_author(name=f"Genel çalma listesini oynat {embed_title}", icon_url=music_source_image(platform), url=query)
 
                         if profile_avatar:
                             embed.set_thumbnail(profile_avatar)
