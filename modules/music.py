@@ -1119,7 +1119,7 @@ class Music(commands.Cog):
 
                 elif menu == "guild_favs":
                     embed.description = f'### `[📌] ⠂Sunucu Favorileri ⠂[📌]\n' \
-                                        f'-# Entegrasyonlarınızı yönetmek için {fav_slashcmd} komutunu kullanın ve ardından seçeneği seçin \"entegrasyonlar\".\n\n' \
+                                        f'-# Favorilerinizi yönetmek için {fav_slashcmd} komutunu kullanın ve ardından seçeneği seçin \"entegrasyonlar\".\n\n' \
                                          f'{embed.description}\n\n'
 
                 elif menu == "latest":
