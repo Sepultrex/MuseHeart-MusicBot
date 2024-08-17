@@ -939,7 +939,7 @@ class Music(commands.Cog):
                 txt += f"`Entegrasyon eklenmedi... " \
                         f"Sahip oldukları tüm genel çalma listelerine kolay erişim sağlamak amacıyla YouTube kanallarına bağlantılar (veya bir müzik platformundaki kullanıcının profiline bir bağlantı) eklemek için entegrasyonları kullanın.`\n"
 
-            txt += f"-# Entegrasyonlarınızı yönetmek için seçeneği belirleyerek {fav_slashcmd} komutunu kullanın \"entegrasyonlar\".\n" \
+            txt += f"-# Entegrasyonlarınızı yönetmek için {fav_slashcmd} komutunu kullanın ve ardından seçeneği seçin \"entegrasyonlar\".\n" \
                     f"### `[💾] Satır Kaydet [💾]`\n"
 
             if os.path.isfile(f"./local_database/saved_queues_v1/users/{inter.author.id}.pkl"):
@@ -1119,7 +1119,7 @@ class Music(commands.Cog):
 
                 elif menu == "guild_favs":
                     embed.description = f'### `[📌] ⠂Sunucu Favorileri ⠂[📌]\n' \
-                                        '`Sunucu favorilerini kullanın (sunucu personeli tarafından eklenir).`\n\n'\
+                                        f'-# Entegrasyonlarınızı yönetmek için {fav_slashcmd} komutunu kullanın ve ardından seçeneği seçin \"entegrasyonlar\".\n\n' \
                                          f'{embed.description}\n\n'
 
                 elif menu == "latest":
