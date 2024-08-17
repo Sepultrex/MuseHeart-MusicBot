@@ -1486,7 +1486,7 @@ class LavalinkPlayer(wavelink.Player):
 
                     for i in range(3):
                         try:
-                            result = await self.bot.spotify.get_recommendations(track_ids)
+                            result = await self.bot.spotify.get_recommendations(track_ids, limit=100)
                             break
                         except Exception as e:
                             self.set_command_log(emoji="⚠️", text=f"Spotify'dan önerilen şarkılar alınamadı, 3'ten {i+1} denemesi.")
