@@ -1114,12 +1114,12 @@ class Music(commands.Cog):
                 elif menu == "integrations":
                     embed.description = '### `[💠] ⠂Entegrasyonlar ⠂[💠]`\n' \
                                         '`Entegrasyon listenizden bir YouTube kanalındaki (veya bir müzik platformundaki kullanıcı profilindeki) herkese açık oynatma listesini oynatın.`\n' \
-                                        f'-# Entegrasyonlarınızı yönetmek için seçeneği belirleyerek {fav_slashcmd} komutunu kullanın \"entegrasyonlar\".\n\n' \
+                                        f'-# Entegrasyonlarınızı yönetmek için {fav_slashcmd} komutunu kullanın ve ardından seçeneği seçin \"entegrasyonlar\".\n\n' \
                                          f'{embed.description}\n\n'
 
                 elif menu == "guild_favs":
                     embed.description = f'### `[📌] ⠂Sunucu Favorileri ⠂[📌]\n' \
-                                        f'-# Favorilerinizi yönetmek için {fav_slashcmd} komutunu kullanın ve ardından seçeneği seçin \"entegrasyonlar\".\n\n' \
+                                        '`Sunucu favorilerini kullanın (sunucu personeli tarafından eklenir).`\n\n'\
                                          f'{embed.description}\n\n'
 
                 elif menu == "latest":
