@@ -1286,13 +1286,13 @@ class Music(commands.Cog):
                                                  emoji=emoji) for c, e in enumerate(info['entries'])
                         ], timeout=120)
                     
-                    embed_title = f"kanalın: {(info.get('title') or selected_title)[:-12]}" if platform == "youtube" else f"profili: {info.get('title') or selected_title}"
+                    embed_title = f"kanalın: {(info.get('title') or selected_title)[:-12]}" if platform == "youtube" else f"profilin: {info.get('title') or selected_title}"
 
                     embed = disnake.Embed(
                         description="\n".join(f'[`{i["title"]}`]({i["url"]})' for i in info['entries']) + "\n\n**Aşağıdan bir çalma listesi seçin:**\n"
                                     f'-# Bu talep otomatik olarak iptal edilecektir <t:{int((disnake.utils.utcnow() + datetime.timedelta(seconds=120)).timestamp())}:R> eğer aşağıda bir seçenek seçmezseniz.',
                         color=self.bot.get_color(guild.me)
-                    ).set_author(name=f"Tocar playlist {embed_title}", icon_url=music_source_image(platform), url=query)
+                    ).set_author(name=f"Herkese açık çalma listesini oynat {embed_title}", icon_url=music_source_image(platform), url=query)
 
                     if profile_avatar:
                         embed.set_thumbnail(profile_avatar)
