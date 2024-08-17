@@ -1111,15 +1111,18 @@ class Music(commands.Cog):
                                         f'-# Favorilerinizi {fav_slashcmd} komutunu kullanarak yönetebilirsiniz.\n\n' \
                                          f'{embed.description}\n\n'
 
+                elif menu == "integrations":
                     embed.description = '### `[💠] ⠂Entegrasyonlar ⠂[💠]`\n' \
                                         '`Entegrasyon listenizden bir YouTube kanalındaki (veya bir müzik platformundaki kullanıcı profilindeki) herkese açık oynatma listesini oynatın.`\n' \
                                         f'-# Entegrasyonlarınızı yönetmek için seçeneği belirleyerek {fav_slashcmd} komutunu kullanın \"entegrasyonlar\".\n\n' \
                                          f'{embed.description}\n\n'
 
+                elif menu == "guild_favs":
                     embed.description = f'### `[📌] ⠂Sunucu Favorileri ⠂[📌]\n' \
                                         '`Sunucu favorilerini kullanın (sunucu personeli tarafından eklenir).`\n\n'\
                                          f'{embed.description}\n\n'
 
+                elif menu == "latest":
                     embed.description = f'### 📑 ⠂En son müziği/çalma listesini çal:\n{embed.description}\n\n'
 
                 embed.description += f'**Aşağıdan bir favori seçin:**\n-# Not: Bu istek otomatik olarak iptal edilecektir <t:{int((disnake.utils.utcnow() + datetime.timedelta(seconds=75)).timestamp())}:R> aşağıdaki seçeneklerden biri seçilmemişse.'
