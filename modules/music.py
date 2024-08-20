@@ -964,7 +964,7 @@ class Music(commands.Cog):
             if guild_data["player_controller"]["fav_links"]:
                 txt += "### `[📌] Sunucu Favorileri [📌]`\n" \
                         "`Sunucu favorisini kullan (sunucu personeli tarafından eklendi).`\n"
-                disnake.SelectOption(label="Sunucu favorilerini kullanın", value=">> [📌 Sunucu favorileri 📌] <<", emoji="📌"),
+                opts.append(disnake.SelectOption(label="Sunucu favorisini kullan", value=">> [📌 Sunucu Favorileri 📌] <<", emoji="📌"),)
 
             embed = disnake.Embed(
                 color=self.bot.get_color(guild.me),
