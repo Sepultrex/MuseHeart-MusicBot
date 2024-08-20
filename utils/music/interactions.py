@@ -1730,8 +1730,14 @@ class FavMenuView(disnake.ui.View):
             self.log = f"Bağlantı {url}, sunucu favorileri listesinden başarıyla kaldırıldı!"
 
         elif self.mode == ViewMode.integrations_manager:
+
+            item = self.data["integration_links"][self.current]
+
+            if isinstance(inter, dict):
+                item = item['url']
+
             try:
-                url = f'[`{self.current}`]({self.data["integration_links"][self.current]})'
+                url = f'[`{self.current}`]({item})'
                 del self.data["integration_links"][self.current]
             except:
                 await inter.send(f"**Listede isimle entegrasyon yok:** {self.current}", ephemeral=True)
