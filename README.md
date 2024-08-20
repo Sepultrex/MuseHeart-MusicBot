@@ -171,7 +171,8 @@ Not: Bu bölümde birkaç rehber daha var [wiki](https://github.com/zRitsu/MuseH
 
 ---
 
-### Eğer bir probleminiz varsa, problemi detaylandıran bir [issue](https://github.com/zRitsu/MuseHeart-MusicBot/issues) gönderin.
+### Eğer çeviri veya bu repoyla ilgili başka bir probleminiz varsa [Issues](https://github.com/sepultrex/MuseHeart-MusicBot-TURKISH/issues) gönderin.
+### Eğer yazılımsal bir sorun varsa veya bir bug keşfettiyseniz [Issues](https://github.com/zRitsu/MuseHeart-MusicBot/issues) gönderin.
 
 
 ## Özel teşekkürler:
