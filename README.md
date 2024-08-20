@@ -182,3 +182,7 @@ Not: Bu bölümde birkaç rehber daha var [wiki](https://github.com/zRitsu/MuseH
 * [DarrenOfficial](https://lavalink-list.darrennathanael.com/) Lavalink sunucu listesi (lavalink sunucularını yayınlayan kullanıcılar, web sitesi / bağlantı ile birlikte hakkında komutunda listelenir).
 * Ve hata bildirimlerinde bana çok yardımcı olan tüm üyelere ([issues](https://github.com/zRitsu/MuseHeart-MusicBot/issues) ve discord sunucusunda).
 * Diğer görevler şu adreste bulunabilir [dependency graph](https://github.com/zRitsu/MuseHeart-MusicBot/network/dependencies)
+
+
+![50dc693cb5596ab2d5d0b927c1a92f76](https://github.com/user-attachments/assets/dfe041d8-f0f9-47b7-b063-ee4e3bb1a881)
+![Komi_San_Maid_Outfit_Python](https://github.com/user-attachments/assets/f7c48e69-538d-4dbc-adf3-83300ba887ef)
