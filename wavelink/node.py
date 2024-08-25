@@ -241,7 +241,7 @@ class Node:
 
         __log__.info(f'NODE | {self.identifier} connected:: {self.__repr__()}')
 
-    async def refresh_potoken(self, sandbox=True):
+    async def refresh_potoken(self, sandbox=True, browser_executable_path=None):
 
         browser = Browser()
 
