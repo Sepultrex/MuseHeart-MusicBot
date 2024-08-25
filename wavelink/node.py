@@ -246,7 +246,7 @@ class Node:
         browser = Browser()
 
         try:
-            await browser.main_session_gen(sandbox=sandbox)
+            await browser.main_session_gen(sandbox=sandbox, browser_executable_path=browser_executable_path)
         except ConnectionError:
             pass
         except Exception as e:
