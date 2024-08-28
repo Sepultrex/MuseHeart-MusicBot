@@ -1887,8 +1887,8 @@ class FavMenuView(disnake.ui.View):
 
         if self.mode == ViewMode.fav_manager:
             if not self.data["fav_links"]:
-                await inter.send(f"**Favori bağlantılarınız yok..\n"
-                                 f"Komutu kullanarak ekleyebilirsiniz: {cmd}**", ephemeral=True)
+                await inter.send(f"**Favori bağlantılarınız yok...\n"
+                                 f"komutunu kullanarak ekleyebilirsiniz.: {cmd}**", ephemeral=True)
                 return
 
             fp = BytesIO(bytes(json.dumps(self.data["fav_links"], indent=4), 'utf-8'))
