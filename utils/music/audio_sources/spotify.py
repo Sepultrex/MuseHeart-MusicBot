@@ -149,7 +149,7 @@ class SpotifyClient:
                             "type": "visitor",
                         }
                         self.type = "visitor"
-                        print("🎶 - Access token do spotify obtido com sucesso do tipo: visitante.")
+                        print("🎶 - Şu türden Spotify erişim keyi başarıyla alındı: ziyaretçi.")
 
             else:
                 token_url = 'https://accounts.spotify.com/api/token'
