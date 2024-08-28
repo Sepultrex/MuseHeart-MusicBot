@@ -1872,7 +1872,7 @@ class FavMenuView(disnake.ui.View):
         if retry_after := cog.fav_import_export_cd.get_bucket(inter).update_rate_limit():
             if retry_after < 1:
                 retry_after = 1
-            await inter.send("**Dışa aktarma için {}'ı beklemeniz gerekir.**".format(
+            await inter.send("**Dışa aktarma için {} beklemeniz gerekir.**".format(
                 time_format(int(retry_after) * 1000, use_names=True)), ephemeral=True)
             return
 
