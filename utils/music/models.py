@@ -2489,12 +2489,12 @@ class LavalinkPlayer(wavelink.Player):
                         ]
                     ),
                 ]
-                
+
                 if self.static:
                     if (queue := self.queue or self.queue_autoplay):
                         data["components"].append(
                             disnake.ui.Select(
-                                placeholder="Próximas músicas:",
+                                placeholder="Sonraki şarkılar:",
                                 custom_id="musicplayer_queue_dropdown",
                                 min_values=0, max_values=1,
                                 options=[
