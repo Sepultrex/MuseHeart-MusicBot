@@ -63,11 +63,11 @@ class SpotifyClient:
                     await self.get_access_token()
                     return await self.request(path=path, params=params)
                 elif response.status == 404:
-                    raise GenericError("**Não houve resultado para o link informado (confira se o link está correto ou se o conteúdo dele está privado ou se foi deletado).**\n\n"
+                    raise GenericError("**Sağlanan bağlantı için sonuç bulunamadı (bağlantının doğru olup olmadığını veya içeriğinin özel mi yoksa silinmiş mi olduğunu kontrol edin).**\n\n"
                                        f"{str(response.url).replace('api.', 'open.').replace('/v1/', '/').replace('s/', '/')}")
                 elif response.status == 429:
                     self.disabled = True
-                    print(f"⚠️ - Spotify: Suporte interno desativado devido a ratelimit (429).")
+                    print(f"⚠️ - Spotify: Hız sınırı nedeniyle dahili destek devre dışı bırakıldı (429).")
                     return
                 else:
                     response.raise_for_status()
@@ -167,7 +167,7 @@ class SpotifyClient:
                         data = await response.json()
 
                     if data.get("error"):
-                        print(f"⚠️ - Spotify: Ocorreu um erro ao obter token: {data['error_description']}")
+                        print(f"⚠️ - Spotify: token alınırken bir hata oluştu: {data['error_description']}")
                         self.client_id = None
                         self.client_secret = None
                         await self.get_access_token()
@@ -181,12 +181,12 @@ class SpotifyClient:
 
                     self.spotify_cache["expires_at"] = time.time() + self.spotify_cache["expires_in"]
 
-                    print("🎶 - Access token do spotify obtido com sucesso via API Oficial.")
+                    print("🎶 - Spotify erişim tokeni, Resmi API aracılığıyla başarıyla alındı.")
 
         except Exception as e:
             self.token_refresh = False
             raise e
-        
+
         self.token_refresh = False
 
         async with aiofiles.open(spotify_cache_file, "w") as f:
@@ -202,7 +202,7 @@ class SpotifyClient:
         if spotify_link_regex.match(query):
             async with bot.session.get(query, allow_redirects=False) as r:
                 if 'location' not in r.headers:
-                    raise GenericError("**Falha ao obter resultado para o link informado...**")
+                    raise GenericError("**Verilen bağlantı için sonuçlar alınamadı...**")
                 query = str(r.headers["location"])
 
         if not (matches := spotify_regex.match(query)) and not self.disabled:
@@ -261,7 +261,7 @@ class SpotifyClient:
             if [n for n in bot.music.nodes.values() if "spotify" in n.info.get("sourceManagers", [])]:
                 return
 
-            raise GenericError("**O suporte a links do spotify está temporariamente desativado.**")
+            raise GenericError("**Spotify bağlantı desteği geçici olarak devre dışı bırakıldı.**")
 
         url_type, url_id = matches.groups()
 
@@ -291,7 +291,7 @@ class SpotifyClient:
             t.info["extra"]["authors_md"] = ", ".join(f"[`{a['name']}`]({a['external_urls']['spotify']})" for a in result["artists"])
 
             try:
-                if result["album"]["name"] != result["name"]:
+                if result["album"]["name"] != result["name"] or result["album"]["total_tracks"] > 1:
                     t.info["extra"]["album"] = {
                         "name": result["album"]["name"],
                         "url": result["album"]["external_urls"]["spotify"]
@@ -324,7 +324,7 @@ class SpotifyClient:
                 thumb = ""
 
             if result["tracks"] is None:
-                raise GenericError("**Não houve resultados para o link do álbum informado...**")
+                raise GenericError("**Sağlanan albüm bağlantısı için sonuç bulunamadı...**")
 
             if len(result["tracks"]) < 2:
 
@@ -354,10 +354,11 @@ class SpotifyClient:
                     f"[`{a['name']}`]({a['external_urls']['spotify']})" for a in track["artists"])
 
                 try:
-                    t.info["extra"]["album"] = {
-                        "name": result["name"],
-                        "url": result["external_urls"]["spotify"]
-                    }
+                    if result["name"] != track["name"] or result["total_tracks"] > 1:
+                        t.info["extra"]["album"] = {
+                            "name": result["name"],
+                            "url": result["external_urls"]["spotify"]
+                        }
                 except (AttributeError, KeyError):
                     pass
 
@@ -398,15 +399,15 @@ class SpotifyClient:
             data["playlistInfo"]["thumb"] = result["images"][0]["url"]
 
             if result["tracks"]["items"] is None:
-                raise GenericError("**Não houve resultados para o link da playlist informada...**")
+                raise GenericError("**Sağlanan oynatma listesi bağlantısı için sonuç bulunamadı...**")
 
             tracks_data = [t["track"] for t in result["tracks"]["items"]]
 
         else:
-            raise GenericError(f"**Link do spotify não reconhecido/suportado:**\n{query}")
+            raise GenericError(f"**Spotify bağlantısı tanınmıyor/desteklenmiyor:**\n{query}")
 
         if not tracks_data:
-            raise GenericError("**Não houve resultados para o link do spotify informado...**")
+            raise GenericError("**Sağlanan Spotify bağlantısı için sonuç bulunamadı...**")
 
         data["playlistInfo"]["selectedTrack"] = -1
         data["playlistInfo"]["type"] = url_type
@@ -443,7 +444,7 @@ class SpotifyClient:
                 pass
 
             try:
-                if t["album"]["name"] != t["name"]:
+                if t["album"]["name"] != t["name"] or t["album"]["total_tracks"] > 1:
                     track.info["extra"]["album"] = {
                         "name": t["album"]["name"],
                         "url": t["album"]["external_urls"]["spotify"]
