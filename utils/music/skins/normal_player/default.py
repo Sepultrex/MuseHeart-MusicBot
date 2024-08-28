@@ -47,7 +47,7 @@ class DefaultSkin:
         else:
             embed.set_author(
                 name="Duraklatıldı:",
-                icon_url="https://cdn.discordapp.com/attachments/480195401543188483/896013933197013002/pause.png"
+                icon_url="https://i.ibb.co/3vTC53C/1259892438928064623.gif"
             )
 
         if player.current_hint:
