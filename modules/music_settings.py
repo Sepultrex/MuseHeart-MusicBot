@@ -963,7 +963,7 @@ class MusicSettings(commands.Cog):
             channel = None
 
         if not channel or channel.guild.id != inter.guild_id:
-            raise GenericError(f"**Ayarlanmış müzik istek kanalı yok (veya kanal silinmiş).**")
+            raise GenericError(f"**{bot.user.mention} botta yapılandırılmış şarkı isteği kanalı yok (veya kanal silinmiş).**")
 
         try:
             if isinstance(channel.parent, disnake.ForumChannel):
