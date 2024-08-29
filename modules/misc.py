@@ -597,8 +597,8 @@ class Misc(commands.Cog):
         if len(allbots) < 2:
 
             embed.description += "### İstatistikler \n" \
-                                 f"> 🏙️ **⠂Sunucu{'es'[:(svcount:=len(bot.guilds))^1]}:** `{svcount:,}`\n" \
-                                 f"> 👥 **⠂Kullanıcı{'s'[:user_count^1]}:** `{user_count:,}`\n"
+                                 f"> 🏙️ **⠂Sunucu{'lar'[:(svcount:=len(bot.guilds))^1]}:** `{svcount:,}`\n" \
+                                 f"> 👥 **⠂Kullanıcı{'lar'[:user_count^1]}:** `{user_count:,}`\n"
 
             if bot_count:
                 embed.description += f"> 🤖 **⠂Bot{'s'[:bot_count^1]}:** `{bot_count:,}`\n"
@@ -624,13 +624,13 @@ class Misc(commands.Cog):
         embed.description += "### Diğer bilgiler:\n"
 
         if active_players_other_bots:
-            embed.description += f"> ▶️ **⠂Player{(s:='s'[:active_players_other_bots^1])} aktif{s}:** `{active_players_other_bots:,}`\n"
+            embed.description += f"> ▶️ **Aktif Oynatıcı{(s:='lar'[:active_players_other_bots^1])} .{s}:** `{active_players_other_bots:,}`\n"
 
         if paused_players_other_bots:
-            embed.description += f"> ⏸️ **⠂Player{'s'[:paused_players_other_bots^1]} duraklamada:** `{paused_players_other_bots:,}`\n"
+            embed.description += f"> ⏸️ **Oynatıcı{'s'[:paused_players_other_bots^1]} duraklatıldı:** `{paused_players_other_bots:,}`\n"
 
         if inactive_players_other_bots:
-            embed.description += f"> 💤 **⠂Player{(s:='s'[:inactive_players_other_bots^1])} aktif değil{s}:** `{inactive_players_other_bots:,}`\n"
+            embed.description += f"> 💤 **⠂Afk Oynatıcı{(s:='lar'[:inactive_players_other_bots^1])} .{s}:** `{inactive_players_other_bots:,}`\n"
 
         if listeners:
             embed.description += f"> 🎧 **⠂Dinleyici{'ler'[:(lcount:=len(listeners))^1]} a{'a'[:lcount^1] or 'l'}:** `{lcount:,}`\n"
@@ -684,7 +684,7 @@ class Misc(commands.Cog):
             text=f"Kullanıcı: {owner} [{owner.id}]"
         )
 
-        components = [disnake.ui.Button(custom_id="bot_invite", label="Beni sunucuna ekle")] if [b for b in self.bot.pool.bots if b.appinfo and (b.appinfo.bot_public or await b.is_owner(inter.author))] else None
+        components = [disnake.ui.Button(custom_id="bot_invite", label="Botu sunucuna ekle (●'◡'●)")] if [b for b in self.bot.pool.bots if b.appinfo and (b.appinfo.bot_public or await b.is_owner(inter.author))] else None
 
         try:
             await inter.edit_original_message(embed=embed, components=components)
