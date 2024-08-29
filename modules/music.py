@@ -617,7 +617,7 @@ class Music(commands.Cog):
 
         if not inter.response.is_done():
             try:
-                async with timeout(2.4):
+                async with timeout(1.5):
                     ephemeral = await self.is_request_channel(inter, data=guild_data, ignore_thread=True)
             except asyncio.TimeoutError:
                 ephemeral = True
@@ -1308,18 +1308,19 @@ class Music(commands.Cog):
 
                     if not (info := self.bot.pool.integration_cache.get(query)):
                         info = await loop.run_in_executor(None, lambda: self.bot.pool.ytdl.extract_info(query,download=False))
+
+                        try:
+                            if not info["entries"]:
+                                raise GenericError(f"**Kullanılamayan (veya gizli) içerik:**\n{query}")
+                        except KeyError:
+                            raise GenericError("**Seçilen seçeneğe ilişkin sonuçlar alınmaya çalışılırken bir hata oluştu...**")
+
                         self.bot.pool.integration_cache[query] = info
 
                     try:
                         profile_avatar = [a['url'] for a in info["thumbnails"] if a["id"] == "avatar_uncropped"][0]
                     except (KeyError, IndexError):
                         pass
-
-                    try:
-                        if not info["entries"]:
-                            raise GenericError(f"**Kullanılamayan (veya özel) içerik:**\n{query}")
-                    except KeyError:
-                        raise GenericError("**Seçilen seçenek için sonuç alınmaya çalışılırken bir hata oluştu...**")
 
                 if len(info["entries"]) == 1:
                     query = info["entries"][0]['url']
