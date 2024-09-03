@@ -1156,8 +1156,7 @@ class LavalinkPlayer(wavelink.Player):
                     return
                 if self.guild and self.guild.me.voice:
                     return
-                self.set_command_log(f"Kanal ile bağlantı kaybı nedeniyle oynatıcının bağlantısı kesildi {self.last_channel.mention}...")
-                await self.destroy(force=True)
+                await self.last_channel.connect()
                 return
 
         if isinstance(event, wavelink.TrackStuck):
