@@ -216,6 +216,11 @@ class DefaultProgressbarSkin:
                         description="Sistema de adição de música automática quando a fila estiver vazia."
                     ),
                     disnake.SelectOption(
+                        label="Last.fm scrobble", emoji="<:Lastfm:1278883704097341541>",
+                        value=PlayerControls.lastfm_scrobble,
+                        description="Last.fm hesabınızda müzik scrobble'ı/kaydı etkinleştirin/devre dışı bırakın."
+                    ),
+                    disnake.SelectOption(
                         label= ("Desativar" if player.restrict_mode else "Ativar") + " o modo restrito", emoji="🔐",
                         value=PlayerControls.restrict_mode,
                         description="Apenas DJ's/Staff's podem usar comandos restritos."

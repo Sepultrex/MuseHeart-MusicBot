@@ -26,11 +26,12 @@ def check_track_title(t: str):
 
 class LastFMView(disnake.ui.View):
 
-    def __init__(self, ctx, session_key: str):
+    def __init__(self, ctx, session_key: str, scrobble: bool = True):
         super().__init__(timeout=300)
         self.ctx = ctx
         self.interaction: Optional[disnake.MessageInteraction] = None
         self.session_key = ""
+        self.scrobble_enabled = scrobble
         self.username = ""
         self.token = ""
         self.last_timestamp = None
@@ -40,18 +41,27 @@ class LastFMView(disnake.ui.View):
         self.clear_session = False
         self.check_loop = None
         self.error = None
-        self.cooldown = commands.CooldownMapping.from_cooldown(1, 15, commands.BucketType.user)
+        self.account_linked = False
+        self.session_key = session_key
+        self.cooldown_scrobble_btn = commands.CooldownMapping.from_cooldown(1, 7, commands.BucketType.user)
+        self.build_components()
 
+    def build_components(self):
 
-        if session_key:
+        if self.session_key:
+
+            btn1 = disnake.ui.Button(label=f"skrobble/kayıt {'Devre dışı bırak' if self.scrobble_enabled else 'Etkinleştir'}")
+            btn1.callback = self.scrobble_enable
+            self.add_item(btn1)
+
             btn2 = disnake.ui.Button(label="Last.fm hesabının bağlantısını kaldır", style=disnake.ButtonStyle.red)
             btn2.callback = self.disconnect_account
             self.add_item(btn2)
 
         else:
-            btn = disnake.ui.Button(label="Last.fm hesabını bağla")
-            btn.callback = self.send_authurl_callback
-            self.add_item(btn)
+            btn3 = disnake.ui.Button(label="Last.fm hesabını bağla")
+            btn3.callback = self.send_authurl_callback
+            self.add_item(btn3)
 
     async def check_session_loop(self):
 
@@ -66,6 +76,8 @@ class LastFMView(disnake.ui.View):
                     continue
                 self.session_key = data["session"]["key"]
                 self.username = data["session"]["name"]
+                self.account_linked = True
+                self.scrobble_enabled = True
                 self.stop()
                 return
             except Exception as e:
@@ -80,9 +92,25 @@ class LastFMView(disnake.ui.View):
 
     async def interaction_check(self, interaction: disnake.MessageInteraction) -> bool:
         if interaction.user.id != self.ctx.author.id:
-            await interaction.send("Bu düğmeyi kullanamazsınız", ephemeral=True)
+            await interaction.send("Bu düğmeyi kullanamazsınızo", ephemeral=True)
             return False
         return True
+
+    async def scrobble_enable(self, interaction: disnake.MessageInteraction):
+
+        if (retry_after := self.cooldown_scrobble_btn.get_bucket(interaction).update_rate_limit()):
+            await interaction.send(f"**Scrobble'ı/kaydı etkinleştirmek/devre dışı bırakmak için {(rta := int(retry_after))} saniye{' '[:rta ^ 1]} Beklemeniz gerekecek**", ephemeral=True)
+            return
+
+        self.scrobble_enabled = not self.scrobble_enabled
+        self.interaction = interaction
+        await interaction.response.defer()
+        user_data = await self.ctx.bot.get_global_data(interaction.author.id, db_name=DBModel.users)
+        user_data["lastfm"]["scrobble"] = self.scrobble_enabled
+        await self.ctx.bot.update_global_data(interaction.author.id, user_data, db_name=DBModel.users)
+        self.clear_items()
+        self.build_components()
+        await interaction.edit_original_message(view=self)
 
     async def disconnect_account(self, interaction: disnake.MessageInteraction):
         self.clear_session = True
@@ -99,8 +127,8 @@ class LastFMView(disnake.ui.View):
             self.auth_url = f'http://www.last.fm/api/auth/?api_key={self.ctx.bot.last_fm.api_key}&token={self.token}'
             self.last_timestamp = int((disnake.utils.utcnow() + datetime.timedelta(minutes=5)).timestamp())
 
-        await interaction.send(f"### [Buraya Tıklayın](<{self.auth_url}>) last.fm hesabınızı bağlamak için (sayfada \"YES, ALLOW ACCES\" tuşuna basın.)\n\n"
-                               f"`Bağlantının süresi şu tarihte doluyor` <t:{self.last_timestamp}:R> `(Süresi dolmuşsa düğmeye tekrar tıklayın).`\n\n"
+        await interaction.send(f"### [Buraya Tıklayın](<{self.auth_url}>) last.fm hesabınızı bağlamak için (sayfada \"izin ver\"e tıklayın)\n\n"
+                               f"`Bağlantının süresi ` <t:{self.last_timestamp}:R> ` içinde doluyor (Süresi dolmuşsa düğmeyi tekrar tıklayın).`\n\n"
                                f"`Dikkat: \"Buraya tıklayın\" bağlantısını kimseye göstermeyin veya yerlere göndermeyin. "
                                f"herkese açık, çünkü bu bağlantı last.fm hesabınıza erişim sağlayabilir`\n\n"
                                "`Uygulamayı zaten yetkilendirdiyseniz, 20 saniyeye kadar beklemeniz gerekir. "
@@ -135,7 +163,7 @@ class LastFmCog(commands.Cog):
 
         try:
             if not inter.permissions.embed_links:
-                raise GenericError(f"**Kanala bağlantı/ek ekleme izniniz yok <#{inter.channel_id}>**")
+                raise GenericError(f"**<#{inter.channel_id}> kanalına bağlantı/ek ekleme izniniz yok**")
         except AttributeError:
             pass
 
@@ -184,7 +212,7 @@ class LastFmCog(commands.Cog):
                 txt += f"> `🔊` **⠂Çalınan toplam şarkılar:** [`{int(playcount):,}`](<https://www.last.fm/user/{lastfm_user['name']}/library>)\n"
 
             if playlists := lastfm_user['playlists'] != "0":
-                txt += f"> `📄` **⠂Herkese açık oynatma listeleri:** [`{int(playlists):,}`](<https://www.last.fm/user/{lastfm_user['name']}/playlists>)\n"
+                txt += f"> `📄` **⠂Herkese Açık Oynatma Listeleri:** [`{int(playlists):,}`](<https://www.last.fm/user/{lastfm_user['name']}/playlists>)\n"
 
             try:
                 slashcmd = f"</play:" + str(self.bot.get_global_command_named("play",
@@ -192,99 +220,103 @@ class LastFmCog(commands.Cog):
             except AttributeError:
                 slashcmd = "/play"
 
-            txt += f"\n`Komutu kullanarak müziğinizi bir ses kanalında dinleyin` {slashcmd} `bunları cihazınıza kaydetmek için " \
-                    f"Last.fm hesabını bağla`\n"
+            txt += f"\n`Şu Komutu kullanarak müziğinizi bir ses kanalında dinleyin: ` {slashcmd} ` " \
+                    f"conta do last.fm`\n"
 
             embeds = [disnake.Embed(
                 description=txt, color=self.bot.get_color()
-            ).set_thumbnail(url=lastfm_user['image'][-1]["#text"]).set_author(
+            ).set_thumbnail(url=lastfm_user['image'][-1]["#text"][:-4] + ".gif").set_author(
                 name="Last.fm: Bağlantılı Hesap Bilgileri",
                 icon_url="https://www.last.fm/static/images/lastfm_avatar_twitter.52a5d69a85ac.png")]
 
-            top_tracks = await self.bot.last_fm.user_top_tracks(data["lastfm"]["username"], limit=3)
+            try:
+                top_tracks = await self.bot.last_fm.user_top_tracks(data["lastfm"]["username"], limit=3)
 
-            if top_tracks:
+                if top_tracks:
 
-                embed = disnake.Embed(
-                    description="\n".join(f"> ` {n+1}º ` [`{t['name']}`]({t['url']}) `De:` [`{t['artist']['name']}`]({t['artist']['url']}) `(x{int(t['playcount']):,})`" for n, t in enumerate(top_tracks)),
-                    color=embed_color).set_author(name=f"Top 3: En çok dinlediğiniz şarkılar (toplamda {int(lastfm_user['track_count']):,}):",
-                    icon_url="https://i.ibb.co/Hhcwdf9/muse-heart-disc.jpg",
-                    url=f"https://www.last.fm/user/{lastfm_user['name']}/library")
+                    embed = disnake.Embed(
+                        description="\n".join(f"> ` {n+1}º ` [`{t['name']}`]({t['url']}) `De:` [`{t['artist']['name']}`]({t['artist']['url']}) `(x{int(t['playcount']):,})`" for n, t in enumerate(top_tracks)),
+                        color=embed_color).set_author(name=f"Top 3: En çok dinlediğiniz şarkılar (toplamda {int(lastfm_user['track_count']):,}):",
+                        icon_url="https://i.ibb.co/Hhcwdf9/muse-heart-disc.jpg",
+                        url=f"https://www.last.fm/user/{lastfm_user['name']}/library")
 
-                if thumb:=top_tracks[0]['image'][-1]["#text"]:
+                    if thumb:=top_tracks[0]['image'][-1]["#text"]:
 
-                    if thumb.endswith("2a96cbd8b46e442fc41c2b86b821562f.png"):
-                        t = top_tracks[0]
-                        kw = {"track": t['name'], 'artist': t['artist']['name']}
+                        if thumb.endswith("2a96cbd8b46e442fc41c2b86b821562f.png"):
+                            t = top_tracks[0]
+                            kw = {"track": t['name'], 'artist': t['artist']['name']}
 
-                        try:
-                            album = t['album']['#text']
-                        except KeyError:
-                            album = None
+                            try:
+                                album = t['album']['#text']
+                            except KeyError:
+                                album = None
 
-                        if album:
-                            kw["album"] = album
-                        r = await self.deezer_search(**kw)
+                            if album:
+                                kw["album"] = album
+                            r = await self.deezer_search(**kw)
 
-                        for i in r:
-                            if album and i['album']['title'] != album:
-                                continue
-                            thumb = i['album']['cover_big']
-                            break
-
-                    embed.set_thumbnail(url=thumb)
-
-                embeds.append(embed)
-
-            top_artists = await self.bot.last_fm.user_top_artists(data["lastfm"]["username"], limit=3)
-
-            if top_artists:
-
-                embed = disnake.Embed(
-                    description="\n".join(f"> ` {n+1}º ` [`{t['name']}`]({t['url']}) `(x{int(t['playcount']):,})`" for n, t in enumerate(top_artists)),
-                    color=embed_color).set_author(name=f"İlk 3: En çok dinlediğiniz sanatçılar (toplamda {int(lastfm_user['artist_count']):,}):",
-                    icon_url="https://i.ibb.co/8KQzkyy/muse-heart-artist-icon.jpg",
-                    url=f"https://www.last.fm/user/{lastfm_user['name']}/library/artists")
-
-                if thumb:=top_artists[0]['image'][-1]["#text"]:
-
-                    if thumb.endswith("2a96cbd8b46e442fc41c2b86b821562f.png"):
-                        t = top_artists[0]
-                        r = await self.deezer_search(**{'artist': t['name']})
-
-                        for i in r:
-                            if i['artist']['name'].lower() == t['name'].lower():
-                                thumb = i['artist']['picture_big']
-                                break
-
-                    embed.set_thumbnail(url=thumb)
-
-                embeds.append(embed)
-
-            top_albuns = await self.bot.last_fm.user_top_albums(data["lastfm"]["username"], limit=3)
-
-            if top_albuns:
-
-                embed = disnake.Embed(
-                    description="\n".join(f"> ` {n+1}º ` [`{b['name']}`]({b['url']}) `de:` [`{b['artist']['name']}`]({b['artist']['url']}) `(x{int(b['playcount']):,})`" for n, b in enumerate(top_albuns)),
-                    color=embed_color).set_author(name=f"Top 5: En çok dinlediğiniz albümler (toplamda {int(lastfm_user['album_count']):,}):",
-                    icon_url="https://i.ibb.co/s6TQK5D/muse-heart-disc-album.jpg",
-                    url=f"https://www.last.fm/user/{lastfm_user['name']}/library/albums")
-
-                if thumb:=top_albuns[0]['image'][-1]["#text"]:
-
-                    if thumb.endswith("2a96cbd8b46e442fc41c2b86b821562f.png"):
-                        t = top_albuns[0]
-                        r = await self.deezer_search(**{"album": t['album']['#text'], 'artist': t['artist']['name']})
-
-                        for i in r:
-                            if t['album']['#text'].lower() == i['album']['title'].lower():
+                            for i in r:
+                                if album and i['album']['title'] != album:
+                                    continue
                                 thumb = i['album']['cover_big']
                                 break
 
-                    embed.set_thumbnail(url=thumb)
+                        embed.set_thumbnail(url=thumb)
 
-                embeds.append(embed)
+                    embeds.append(embed)
+
+                top_artists = await self.bot.last_fm.user_top_artists(data["lastfm"]["username"], limit=3)
+
+                if top_artists:
+
+                    embed = disnake.Embed(
+                        description="\n".join(f"> ` {n+1}º ` [`{t['name']}`]({t['url']}) `(x{int(t['playcount']):,})`" for n, t in enumerate(top_artists)),
+                        color=embed_color).set_author(name=f"İlk 3: En çok dinlediğiniz sanatçılar (toplamda {int(lastfm_user['artist_count']):,}):",
+                        icon_url="https://i.ibb.co/8KQzkyy/muse-heart-artist-icon.jpg",
+                        url=f"https://www.last.fm/user/{lastfm_user['name']}/library/artists")
+
+                    if thumb:=top_artists[0]['image'][-1]["#text"]:
+
+                        if thumb.endswith("2a96cbd8b46e442fc41c2b86b821562f.png"):
+                            t = top_artists[0]
+                            r = await self.deezer_search(**{'artist': t['name']})
+
+                            for i in r:
+                                if i['artist']['name'].lower() == t['name'].lower():
+                                    thumb = i['artist']['picture_big']
+                                    break
+
+                        embed.set_thumbnail(url=thumb)
+
+                    embeds.append(embed)
+
+                top_albuns = await self.bot.last_fm.user_top_albums(data["lastfm"]["username"], limit=3)
+
+                if top_albuns:
+
+                    embed = disnake.Embed(
+                        description="\n".join(f"> ` {n+1}º ` [`{b['name']}`]({b['url']}) `de:` [`{b['artist']['name']}`]({b['artist']['url']}) `(x{int(b['playcount']):,})`" for n, b in enumerate(top_albuns)),
+                        color=embed_color).set_author(name=f"Top 5: En çok dinlediğiniz albümler (toplamda {int(lastfm_user['album_count']):,}):",
+                        icon_url="https://i.ibb.co/s6TQK5D/muse-heart-disc-album.jpg",
+                        url=f"https://www.last.fm/user/{lastfm_user['name']}/library/albums")
+
+                    if thumb:=top_albuns[0]['image'][-1]["#text"]:
+
+                        if thumb.endswith("2a96cbd8b46e442fc41c2b86b821562f.png"):
+                            t = top_albuns[0]
+                            r = await self.deezer_search(**{"album": t['album']['#text'], 'artist': t['artist']['name']})
+
+                            for i in r:
+                                if t['album']['#text'].lower() == i['album']['title'].lower():
+                                    thumb = i['album']['cover_big']
+                                    break
+
+                        embed.set_thumbnail(url=thumb)
+
+                    embeds.append(embed)
+            except:
+                traceback.print_exc()
+
 
         else:
             embeds = [disnake.Embed(
@@ -293,11 +325,9 @@ class LastFmCog(commands.Cog):
                             "şarkılar/sanatçılar/albümler ve dinlediğiniz şarkıların genel istatistiklerine sahip olmanın yanı sıra "
                             "inanılmaz bir platform topluluğuna erişim.**",
                 color=embed_color
-            ).set_thumbnail(url="https://www.last.fm/static/images/lastfm_avatar_twitter.52a5d69a85ac.png").
-                      set_footer(text="Not: Şu anda youtube ve soundclouddan dinledikleriniz "
-                                      "göz ardı edilecektir.")]
+            ).set_thumbnail(url="https://www.last.fm/static/images/lastfm_avatar_twitter.52a5d69a85ac.png")]
 
-        view = LastFMView(inter, session_key=current_session_key)
+        view = LastFMView(inter, session_key=current_session_key, scrobble=data["lastfm"]["scrobble"])
 
         if isinstance(inter, CustomContext):
             msg = await inter.send(embeds=embeds, view=view)
@@ -317,7 +347,7 @@ class LastFmCog(commands.Cog):
                 raise view.error
 
             embeds[-1].set_footer(
-                text="Bu mesajla etkileşime geçme süresi doldu.",
+                text="Bu mesajla etkileşime geçme süresi doldu..",
                 icon_url="https://i.ibb.co/gb0cZQw/warning.png",
             )
 
@@ -328,7 +358,7 @@ class LastFmCog(commands.Cog):
 
             return
 
-        newdata = {"scrobble": True, "sessionkey": view.session_key, "username": view.username}
+        newdata = {"scrobble": view.scrobble_enabled, "sessionkey": view.session_key, "username": view.username or data["lastfm"]["username"]}
         data["lastfm"].update(newdata)
         await self.bot.update_global_data(inter.author.id, data=data, db_name=DBModel.users)
 
@@ -344,9 +374,20 @@ class LastFmCog(commands.Cog):
             func = inter.edit_original_message
 
         if view.session_key:
-            embeds[0].description += f"\n### Kullanıcı [{view.username}](<https://www.last.fm/user/{view.username}>) hesabını " \
-                                 "başarıyla bağladı!\n\n`Artık ses kanalında şarkılarınızı dinlerken " \
-                                "otomatik olarak last.fm hesabınıza kaydedilecektir`🫡❤️‍🔥"
+
+            for c in view.children:
+                c.disabled = True
+
+            if not view.account_linked:
+                if msg and isinstance(inter, CustomContext):
+                    await msg.edit(view=view)
+                elif (inter:=view.interaction or inter):
+                    await inter.edit_original_message(view=view)
+                return
+
+            embeds[0].description += f"\n### Şu bilgileri içerir: [{view.username}](<https://www.last.fm/user/{view.username}>) " \
+                                 "başarıyla bağlandı!\n\n`Artık ses kanalında şarkılarınızı dinlerken " \
+                                "otomatik olarak last.fm hesabınıza kaydedilecektir`"
 
             await func(embeds=embeds, view=view, content=None)
 
@@ -379,7 +420,7 @@ class LastFmCog(commands.Cog):
 
         if player.last_channel != after.channel:
             return
-        
+
         if not player.guild.me.voice:
             return
 
@@ -479,7 +520,7 @@ class LastFmCog(commands.Cog):
                             result = [t for t in result if (t.duration - 10000) < track.duration < (t.duration + 10000) and check_track_title(t.title)]
                         else:
                             result = [t for t in result if (t.duration - 10000) < track.duration < (t.duration + 10000)]
-                            
+
                         if not result:
                             print(f"⚠️ - Last.FM Scrobble -Şarkı için sonuç yok: {track_query}")
                             self.bot.last_fm.cache[track_query] = {}
@@ -496,7 +537,7 @@ class LastFmCog(commands.Cog):
                         self.bot.last_fm.scrobble_save_cache()
 
                     if not fmdata:
-                        print(f"⚠️ - Last.FM Scrobble – Yoksayıldı: {track_query}")
+                        print(f"⚠️ - Last.FM Scrobble -Yoksayıldı: {track_query}")
                         return
 
                     name = fmdata["name"]

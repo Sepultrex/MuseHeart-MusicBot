@@ -208,6 +208,11 @@ class DefaultSkin:
                         description="Sıra boşaldığında otomatik müzik ekleme sistemi."
                     ),
                     disnake.SelectOption(
+                        label="Last.fm scrobble", emoji="<:Lastfm:1278883704097341541>",
+                        value=PlayerControls.lastfm_scrobble,
+                        description="Last.fm hesabınızda müzik scrobble'ı/kaydı etkinleştirin/devre dışı bırakın."
+                    ),
+                    disnake.SelectOption(
                         label= ("Devre dışı bırakıldı" if player.restrict_mode else "Etkinleştirildi") + " kısıtlı mod", emoji="🔐",
                         value=PlayerControls.restrict_mode,
                         description="Yalnızca DJ'ler/Personeller kısıtlı komutları kullanabilir."

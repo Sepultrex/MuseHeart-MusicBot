@@ -2481,6 +2481,11 @@ class LavalinkPlayer(wavelink.Player):
                                 description="Kuyruk boş olduğunda otomatik müzik çalma sistemi."
                             ),
                             disnake.SelectOption(
+                                label="Last.fm scrobble", emoji="<:Lastfm:1278883704097341541>",
+                                value=PlayerControls.lastfm_scrobble,
+                                description="Last.fm hesabınızda müzik scrobble'ı/kaydı etkinleştirme/devre dışı bırakma."
+                            ),
+                            disnake.SelectOption(
                                 label=("Devre dışı bırak" if self.restrict_mode else "Etkinleştir") + " kısıtlı mod",
                                 emoji="🔐",
                                 value=PlayerControls.restrict_mode,
