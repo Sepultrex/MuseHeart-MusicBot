@@ -751,23 +751,10 @@ class LavalinkPlayer(wavelink.Player):
                     await self.destroy()
                     return
 
-
-                if (ping:=round(self.bot.latency * 1000)) > self.bot.pool.config["VOICE_CHANNEL_LATENCY_RECONNECT"]:
-                    voice_msg = f"Olası bir bağlantı kararsızlığı sorunu nedeniyle ses kanalına yeniden bağlandım (ping: {ping}ms)."
-                elif self.keep_connected:
-                    voice_msg = f"Kanalla bağlantımı kesmek için bir girişimde bulunulduğunu fark ettim <#{vc.id}>."
-                else:
-                    voice_msg = None
-
-                if not voice_msg:
-                    self.set_command_log(text=f"Oyuncu, kanalla bağlantı kaybı nedeniyle sonlandırıldı <#{vc.id}>.",
-                                           emoji="⚠️")
-                    await self.destroy()
-                    return
-
                 try:
                     await self.connect(vc.id)
-                    self.set_command_log(text=f"{voice_msg}\nEğer bağlantımı gerçekten kesmek istiyorsanız, komutu/düğmeyi kullanın: **durdur**.",
+                    self.set_command_log(text=f"<#{vc.id}> kanalıyla bağlantımı kesme girişimini fark ettim.\n"
+                                              f"Bağlantıyı gerçekten kesmek istiyorsanız şu komutu/düğmeyi kullanın: **durdur**.",
                                            emoji="⚠️")
                     self.update = True
                     await asyncio.sleep(5)
