@@ -5389,7 +5389,7 @@ class Music(commands.Cog):
                 await self.bot.update_global_data(interaction.author.id, user_data, db_name=DBModel.users)
                 await interaction.edit_original_message(
                     embed=disnake.Embed(
-                        description=f'**Scrobble/şarkı kaydı şu şekilde: {"açık" if user_data["lastfm"]["scrobble"] else "kapalı"} **',
+                        description=f'**Scrobble/şarkı kaydı şu şekildeydi: {"etkin" if user_data["lastfm"]["scrobble"] else "devredışı"} hesap: [{user_data["lastfm"]["username"]}](<https://www.last.fm/user/{user_data["lastfm"]["username"]}>).**',
                         color=self.bot.get_color()
                     )
                 )
