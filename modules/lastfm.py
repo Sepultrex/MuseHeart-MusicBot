@@ -92,7 +92,7 @@ class LastFMView(disnake.ui.View):
 
     async def interaction_check(self, interaction: disnake.MessageInteraction) -> bool:
         if interaction.user.id != self.ctx.author.id:
-            await interaction.send("Bu düğmeyi kullanamazsınızo", ephemeral=True)
+            await interaction.send("Bu düğmeyi kullanamazsınız", ephemeral=True)
             return False
         return True
 
