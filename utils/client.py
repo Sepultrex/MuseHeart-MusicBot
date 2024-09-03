@@ -1324,7 +1324,7 @@ class BotCore(commands.AutoShardedBot):
     async def on_application_command(self, inter: disnake.ApplicationCommandInteraction):
 
         if not self.bot_ready or self.is_closed():
-            await inter.send("Hala başlatıyorum...\Lütfen biraz daha bekleyin....", ephemeral=True)
+            await inter.send("Hala başlatıyorum... Lütfen biraz daha bekleyin....", ephemeral=True)
             return
 
         await super().on_application_command(inter)
