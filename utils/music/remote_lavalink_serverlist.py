@@ -1,4 +1,4 @@
-# pip install requests ou adicione requests no requirements.txt (caso não tenha, crie esse arquivo com o nome requests nele).
+# pip install request veya request.txt dosyasına add request ekleyin (değilse, içinde request adı bulunan bu dosyayı oluşturun).
 import re
 import traceback
 from configparser import ConfigParser
@@ -43,8 +43,8 @@ def get_lavalink_servers():
 
     lavalink_nodes = {}
 
-    print(f"Baixando lista de servidores lavalink da fonte: https://lavalink-list.darrennathanael.com/\n"
-          "Nota: Devido a esses servidores lavalink serem públicos, os mesmos podem apresentar instabilidade.")
+    print(f"Lavalink sunucu listesini kaynaktan indiriyorum: https://lavalink-list.darrennathanael.com/\n"
+          "Not: Bu lavalink sunucuları herkese açık olduğundan kararsız olabilirler.")
 
     for url_type, url in lavalink_urls.items():
 
