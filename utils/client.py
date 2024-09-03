@@ -855,9 +855,7 @@ class BotPool:
 
         if not self.bots:
 
-            os.system('cls' if os.name == 'nt' else 'clear')
-
-            message = "Bot tokeni düzgün yapılandırılmamış!\n\n"
+            message = "Bot tokeni doğru şekilde yapılandırılmamış!"
 
             if os.environ.get("REPL_SLUG"):
                 message += f"Belirtecin tekrarlanan gizli dizilere eklenip eklenmediğini kontrol edin"
@@ -867,17 +865,21 @@ class BotPool:
                 message += f'. <a href="https://gist.github.com/zRitsu/70737984cbe163f890dae05a80a3ddbe#2---com-o-projeto-j%C3%A1-criado-prossiga-as-etapas-abaixo" target="_blank">Clique aqui</a> para ver o guia de como configurar.'
 
             else:
-                message += "Belirtecin ENV/ENVIRONMENT'ta mı yoksa .env dosyasında mı yapılandırıldığını kontrol edin"
+                message += " Belirtecin ENV/ENVIRONMENT'te mi yoksa .env dosyasında mı yapılandırıldığını kontrol edin"
 
-                print(message)
+                print(f"⚠️ - {message}")
 
-        if start_local:
-            loop.create_task(self.start_lavalink(loop=loop))
+            message = f"\n\n{message}"
 
-        if not self.spotify.spotify_cache:
-            loop.create_task(self.spotify.get_access_token())
+        else:
 
-        self.node_check(LAVALINK_SERVERS, loop=loop, start_local=start_local)
+            if start_local:
+                loop.create_task(self.start_lavalink(loop=loop))
+
+            if not self.spotify.spotify_cache:
+                loop.create_task(self.spotify.get_access_token())
+
+            self.node_check(LAVALINK_SERVERS, loop=loop, start_local=start_local)
 
         if self.config["RUN_RPC_SERVER"]:
 
