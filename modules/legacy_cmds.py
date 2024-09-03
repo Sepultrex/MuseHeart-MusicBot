@@ -214,32 +214,37 @@ class Owner(commands.Cog):
         else:
             return txt
         
-    reload_flags = CommandArgparse()
-    reload_flags.add_argument("-skins", "--skins", action="store_true",
-                              help="Recarregar skins.")
 
     @commands.is_owner()
-    @panel_command(aliases=["rd", "recarregar"], description="Modülleri yeniden yükleyin.", emoji="🔄",
-                   alt_name="Modülleri yükleyin/yeniden yükleyin.", extras={"flags": reload_flags})
-    async def reload(self, ctx: Union[CustomContext, disnake.MessageInteraction], *opts):
+    @panel_command(aliases=["rds", "recarregarskins"], description="Skinleri yeniden yükleyin.", emoji="🎨")
+    async def reloadskins(self, ctx: Union[CustomContext, disnake.MessageInteraction]):
 
-        args, modules = self.bot.get_command("reload").extras['flags'].parse_known_args(opts)
+        for m in list(sys.modules):
+            if not m.startswith("utils.music.skins."):
+                continue
+            try:
+                del sys.modules[m]
+            except:
+                continue
 
-        if not modules or args.skins:
+            self.bot.pool.load_skins()
 
-            for m in list(sys.modules):
-                if not m.startswith("utils.music.skins."):
-                    continue
-                try:
-                    del sys.modules[m]
-                except:
-                    continue
+        txt = "**Dış görünümler başarıyla yeniden yüklendi!**"
+
+        if isinstance(ctx, CustomContext):
+            embed = disnake.Embed(colour=self.bot.get_color(ctx.me), description=txt)
+            await ctx.send(embed=embed, view=self.owner_view)
+        else:
+            return txt
+
+    @commands.is_owner()
+    @panel_command(aliases=["rd", "recarregar"], description="Recarregar módulos.", emoji="🔄",
+                   alt_name="Carregar/Recarregar os módulos.")
+    async def reload(self, ctx: Union[CustomContext, disnake.MessageInteraction], *modules):
 
         modules = [f"{m.lower()}.py" for m in modules]
 
         data = {}
-
-        self.bot.pool.load_skins()
 
         for bot in (allbots:=set(self.bot.pool.get_all_bots())):
             data = bot.load_modules(modules)
